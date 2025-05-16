@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .api import auth, laws, chat, comment, mypage, percent, vote, votecheck, search, summary
+from .routers import auth, laws, chat, comment, mypage, percent, vote, votecheck, search, summary
 
 app = FastAPI()
 

@@ -12,6 +12,10 @@ class AuthCode(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    phone = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True)
     password = Column(String)
+    nickname = Column(String, unique=True, index=True)
+

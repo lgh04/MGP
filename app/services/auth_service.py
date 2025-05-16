@@ -66,7 +66,7 @@ def authenticate_user(user: UserLogin, db: Session):
 
 def generate_auth_code(phone: str, db: Session):
     code = str(random.randint(100000, 999999))
-    db_code = AuthModel.AuthCode(phone=phone, code=code)
+    db_code = AuthModel(phone=phone, code=code)
     db.add(db_code)
     db.commit()
     return code

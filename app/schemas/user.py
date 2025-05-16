@@ -1,11 +1,17 @@
 from pydantic import BaseModel
 
 class UserCreate(BaseModel):
-    username: str
+    name: str
+    phone: str
+    email: str
     password: str
+    confirm_password: str
+    nickname: str
+    phone_auth_code: str
+
 
 class UserLogin(BaseModel):
-    username: str
+    email: str
     password: str
 
 class PhoneAuthRequest(BaseModel):
