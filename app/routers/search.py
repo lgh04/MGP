@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from ..models.bill import Bill
 from ..db import get_db
 from sqlalchemy import desc
+from app.services import law_api
 
 router = APIRouter()
 
@@ -40,3 +41,15 @@ def search_bills(
         bill.id = index  # 검색된 항목에 번호를 붙여줌 (번호는 1부터 시작)
 
     return {"bills": bills}
+
+
+
+router = APIRouter(prefix="/law", tags=["법률"])
+
+@router.get("/proposals")
+def get_proposals():
+    return law_api.fetch_law_proposals()
+
+@router.get("/details")
+def get_details():
+    return law_api.fetch_law_details()
