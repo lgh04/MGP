@@ -53,3 +53,26 @@ def get_proposals():
 @router.get("/details")
 def get_details():
     return law_api.fetch_law_details()
+
+
+"""
+/routers/search.py  
+역할:  
+법안 검색 및 외부 API를 통해 법안 제안·상세 데이터를 불러오는 API 라우터.  
+제목 기반 검색, 상태 필터링, 정렬 방식 설정 기능을 제공하고, 외부 API로부터 입법 관련 데이터를 가져온다.  
+
+연결된 서비스:  
+law_api.py: 외부 열린국회 API와 연결되어 법안 제안 목록과 상세 정보를 불러오는 로직이 구현된 서비스 레이어  
+models/bill.py: 검색 대상인 법안 데이터 모델 정의  
+db/get_db.py: SQLAlchemy 세션 의존성 주입  
+
+엔드포인트 목록:  
+법안 검색 = 메서드-GET, 경로-/search, 요청 쿼리 파라미터-title(str), status(str), sort_by(str), 응답-검색된 법안 리스트  
+법안 제안 목록 조회 = 메서드-GET, 경로-/law/proposals, 응답-외부 API에서 받아온 법안 제안 데이터  
+법안 상세 목록 조회 = 메서드-GET, 경로-/law/details, 응답-외부 API에서 받아온 법안 상세 데이터  
+
+동작 흐름 요약  
+/search: 제목을 기준으로 법안을 검색하고, 상태(`draft`, `enacted`)나 정렬 기준(`created_at`, `views`)을 설정해 결과를 필터링한 뒤 번호를 붙여 반환한다.  
+/law/proposals: 열린국회 API로부터 법안 제안 목록을 받아와 반환한다.  
+/law/details: 열린국회 API로부터 법안 상세 목록을 받아와 반환한다.  
+"""
