@@ -42,3 +42,25 @@ def save_bills_to_db(db: Session):
         )
         db.add(bill)
     db.commit()
+
+"""
+/services/bill_fetcher.py
+역할:
+국회 오픈 API를 통해 법안 데이터를 가져오고, 이를 데이터베이스에 저장하는 역할을 담당하는 서비스 레이어
+
+주요 기능:
+-국회 API 요청을 통해 JSON 형식의 법안 데이터 수집
+-법안 제목으로 조건 검색 가능 (선택적)
+-이미 존재하는 법안은 중복 저장 방지
+-새로운 법안 데이터를 SQLAlchemy를 통해 DB에 저장
+
+함수 목록 및 설명:
+-def fetch_api_data(url, bill_name=None): 지정된 URL에서 API 데이터를 요청해 JSON 결과를 반환. bill_name 인자를 통해 제목 검색 가능
+-def save_bills_to_db(db): 국회 API에서 모든 법안 데이터를 가져와 중복 확인 후 새로운 법안만 DB에 저장
+
+동작 흐름 요약
+save_bills_to_db 함수는 URL_2에서 전체 법안 목록을 가져옴
+→ 각 법안의 BILL_ID를 기준으로 DB에 존재 여부 확인
+→ 존재하지 않는 법안만 SQLAlchemy 모델로 변환 후 DB에 추가
+→ 마지막에 전체 커밋하여 저장 완료
+"""
