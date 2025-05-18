@@ -1,30 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from ..models.bill import Bill
-from ..db import get_db
-from sqlalchemy import desc
+# 법안 제목 검색, 상태 필터링, 정렬 기능을 제공하는 법안 검색 API 라우터
 
+from fastapi import APIRouter, Depends, HTTPException # 라우터 및 예외처리, 의존성 주입
+from sqlalchemy.orm import Session # DB 세션 타입
+from ..models.bill import Bill # 법안 모델
+from ..db import get_db # DB 세션 주입 함수
+from sqlalchemy import desc # 내림차순 정렬용
+
+# 법안 제목 검색 + 상태 필터 + 정렬 옵션 제공
 router = APIRouter()
 
 @router.get("/search")
 def search_bills(
-    title: str = "",
-    status: str = "",
-    sort_by: str = "created_at",  # 기본적으로 created_at 기준으로 정렬
-    db: Session = Depends(get_db)
+    title: str = "", # 검색할 법안 제목 (포함 검색)
+    status: str = "", # 상태 필터 ("draft" 또는 "enacted")
+    sort_by: str = "created_at", # 정렬 기준 ("created_at", "views")
+    db: Session = Depends(get_db) # DB 세션 주입
 ):
-    # status가 있으면 유효성 검사
+    # 상태 필터 값이 유효한지 확인
     if status and status not in ["draft", "enacted"]:
         raise HTTPException(status_code=400, detail="Invalid status")
 
-    # 쿼리 준비
+    # 제목 포함 검색 쿼리 시작
     query = db.query(Bill).filter(Bill.name.contains(title))
 
-    # status가 있을 경우 필터 추가
+    # 상태 필터가 있다면 추가
     if status:
         query = query.filter(Bill.status == status)
 
-    # sort_by가 created_at이면 최신순 정렬, views이면 조회수 높은 순으로 정렬
+    # 정렬 기준 처리 (created_at: 최신순, views: 조회수순)
     if sort_by == "created_at":
         query = query.order_by(desc(Bill.created_at))  # 최신순 정렬
     elif sort_by == "views":
@@ -32,11 +35,11 @@ def search_bills(
     else:
         raise HTTPException(status_code=400, detail="Invalid sort_by value")
 
-    # 검색된 모든 결과를 가져옴
+    # 최종 결과 쿼리 실행
     bills = query.all()
 
-    # 결과에 번호 붙이기
+    # 검색 결과에 번호 붙이기 (1부터 시작)
     for index, bill in enumerate(bills, start=1):
-        bill.id = index  # 검색된 항목에 번호를 붙여줌 (번호는 1부터 시작)
-
-    return {"bills": bills}
+        bill.id = index  # 실제 DB ID를 덮어쓸 수 있어 주의 필요
+        
+    return {"bills": bills} # 결과 반환
