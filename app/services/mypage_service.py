@@ -1,17 +1,25 @@
-import sqlite3
+# 특정 사용자가 참여한 토론방 목록(방 ID, 방 이름)을 데이터베이스에서 조회해 반환하는 마이페이지용 서비스 파일
 
+import sqlite3 # SQLite 데이터베이스 사용을 위한 모듈
+
+# 특정 사용자가 참여 중인 토론방 목록 조회 함수
 def get_user_rooms(user_id: str) -> list:
+    # DB 연결
     conn = sqlite3.connect("acton.db")
     cur = conn.cursor()
+    
+    # user_room_mapping 테이블과 discussion_rooms 테이블을 JOIN하여
+    # 해당 사용자가 속한 방들의 ID와 이름을 가져옴
     cur.execute("""
         SELECT r.room_id, r.room_name 
         FROM user_room_mapping urm
         JOIN discussion_rooms r ON urm.room_id = r.room_id
         WHERE urm.user_id = ?
     """, (user_id,))
-    rows = cur.fetchall()
-    conn.close()
-    return [{"room_id": r[0], "room_name": r[1]} for r in rows]
+    
+    rows = cur.fetchall()  # 조회된 결과 가져오기
+    conn.close() # DB 연결 종료
+    return [{"room_id": r[0], "room_name": r[1]} for r in rows] # 결과를 딕셔너리 리스트로 변환하여 반환
 
 
 """
