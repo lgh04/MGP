@@ -1,32 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from ..schemas.user import UserCreate, UserLogin, PhoneAuthRequest, PhoneAuthVerify
-from ..services import auth_service
-from app.db import get_db
+#회원가입, 로그인, 휴대폰 인증(전송·검증)을 처리하는 FastAPI용 사용자 인증 라우터
 
+from fastapi import APIRouter, Depends, HTTPException # FastAPI에서 라우터, 의존성 주입, 예외 처리를 가져옴
+from sqlalchemy.orm import Session # SQLAlchemy ORM을 위한 DB 세션 불러오기
+from ..schemas.user import UserCreate, UserLogin, PhoneAuthRequest, PhoneAuthVerify # 사용자 관련 스키마 불러오기 (Pydantic 모델)
+from ..services import auth_service # 인증 관련 로직을 처리하는 서비스 모듈
+from app.db import get_db # DB 세션 연결 함수
+
+# 라우터 인스턴스 생성 (이 파일에서 정의한 API를 묶음)
 router = APIRouter()
 
-# ✅ 회원가입
-@router.post("/register")
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+# 회원가입 API
+@router.post("/register") # /register 경로로 POST 요청이 들어오면 실행됨
+def register_user(user: UserCreate, db: Session = Depends(get_db)): # auth_service에 있는 create_user 함수 호출하여 사용자 생성
     return auth_service.create_user(user, db)
 
-# ✅ 로그인
-@router.post("/login")
-def login_user(user: UserLogin, db: Session = Depends(get_db)):
+# 로그인 API
+@router.post("/login") # /login 경로로 POST 요청이 들어오면 실행됨
+def login_user(user: UserLogin, db: Session = Depends(get_db)): # 입력된 로그인 정보로 사용자 인증 시도
     return auth_service.authenticate_user(user, db)
 
-# ✅ 인증번호 전송
-@router.post("/auth/send-code")
-def send_code(request: PhoneAuthRequest, db: Session = Depends(get_db)):
+# 인증번호 전송 API
+@router.post("/auth/send-code") # /auth/send-code 경로로 POST 요청
+def send_code(request: PhoneAuthRequest, db: Session = Depends(get_db)): # 요청받은 전화번호로 인증번호를 생성하고 전송 처리
     return {"message": f"인증번호 {auth_service.generate_auth_code(request.phone, db)}가 발송되었습니다."}
 
-# ✅ 인증번호 확인
-@router.post("/auth/verify-code")
-def verify_code(request: PhoneAuthVerify, db: Session = Depends(get_db)):
+# 인증번호 확인 API
+@router.post("/auth/verify-code") # /auth/verify-code 경로로 POST 요청
+def verify_code(request: PhoneAuthVerify, db: Session = Depends(get_db)): # 인증번호가 일치하면 성공 메시지 반환
     if auth_service.verify_auth_code(request.phone, request.input_code, db):
         return {"message": "인증 성공"}
-    raise HTTPException(status_code=400, detail="인증번호가 일치하지 않습니다.")
+    raise HTTPException(status_code=400, detail="인증번호가 일치하지 않습니다.") # 일치하지 않으면 400 에러 발생
 
 
 
