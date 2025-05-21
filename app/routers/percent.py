@@ -1,10 +1,15 @@
-from fastapi import APIRouter
-from ..services.percent_service import calculate_vote_percentages
-router = APIRouter()
+# 특정 법안에 대한 찬반 투표 결과(비율)를 계산하여 반환하는 API 라우터
 
-@router.get("/vote/result/{law_id}")
+from fastapi import APIRouter # FastAPI 라우터 기능 불러오기
+from ..services.percent_service import calculate_vote_percentages # 투표 비율 계산을 위한 서비스 함수 가져오기
+router = APIRouter() # 이 파일의 API들을 담을 라우터 인스턴스 생성
+
+# 법안 투표 결과 비율 조회 API
+@router.get("/vote/result/{law_id}") # /vote/result/<law_id> 경로로 GET 요청 시 실행
 def get_vote_result(law_id: str):
+     # 해당 법안 ID를 기반으로 찬반 투표 비율 계산
     result = calculate_vote_percentages(law_id)
+    # 계산된 결과 반환
     return result
 
 
