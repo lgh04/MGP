@@ -1,24 +1,31 @@
-import requests
+# 특정 법안 ID를 기반으로 국회 API에서 상세 정보를 조회해 제목과 내용을 반환하는 단일 법안 조회 서비스 함수
 
+import requests # 외부 API 요청을 위한 requests 모듈
+
+# 특정 법안 ID로 상세 정보 조회 함수
 def fetch_law_detail(law_id: str) -> dict:
     try:
+        # 국회 API URL (법안 기본정보 조회용)
         url = f"https://open.assembly.go.kr/portal/openapi/nzmimeepazxkubdpn"  # 예시용 API 키
+         # 요청 파라미터 설정
         params = {
-            'KEY': 'YOUR_API_KEY_HERE',  # 실제 발급받은 API 키
-            'Type': 'json',
-            'AGE': '21',
-            'BILL_ID': law_id
+            'KEY': 'YOUR_API_KEY_HERE',  # 여기에 실제 발급받은 API 키 입력
+            'Type': 'json', # 응답 형식
+            'AGE': '21',  # 국회 회기 (21대 국회 기준)
+            'BILL_ID': law_id  # 조회할 법안 ID
         }
-        response = requests.get(url, params=params)
-        if response.status_code == 200:
-            result = response.json()
-            bill_data = result['nzmimeepazxkubdpn'][1]['row'][0]  # 실제 응답 구조에 따라 조정
-            return {
-                "title": bill_data.get("BILL_NAME", "제목 없음"),
-                "content": bill_data.get("RST_PROPOSER", "내용 없음")  # 설명이 들어있는 다른 필드를 사용할 수도 있음
+        
+        response = requests.get(url, params=params) # GET 요청 전송
+        if response.status_code == 200: # 응답 코드가 200일 경우 처리
+            result = response.json() # 응답 JSON 파싱
+            bill_data = result['nzmimeepazxkubdpn'][1]['row'][0]  # 실제 데이터 위치
+            return { # 필요한 필드만 선택해서 반환
+                "title": bill_data.get("BILL_NAME", "제목 없음"), # 법안 제목
+                "content": bill_data.get("RST_PROPOSER", "내용 없음")  # 내용 또는 제안자 정보
             }
-        else:
+        else: # 실패 시 기본 메시지 반환
             return {"title": "법안 정보를 불러오지 못했습니다", "content": ""}
+    # API 호출 또는 파싱 중 예외 발생 시
     except Exception as e:
         print("API 호출 오류:", e)
         return {"title": "API 오류 발생", "content": ""}
