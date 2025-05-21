@@ -1,21 +1,29 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
-from ..services.chat_service import send_message, get_chat_history
+# 특정 채팅방에 메시지를 보내고, 해당 채팅방의 전체 채팅 기록을 조회하는 API 라우터
 
-router = APIRouter()
+from fastapi import APIRouter # FastAPI의 라우터 기능을 가져옴
+from pydantic import BaseModel # 요청 데이터 검증을 위한 Pydantic의 BaseModel 사용
+from ..services.chat_service import send_message, get_chat_history # 채팅 관련 서비스 함수 (메시지 전송, 기록 조회) 불러오기
 
+router = APIRouter() # 이 라우터에 포함될 API 경로들을 정의할 라우터 인스턴스 생성
+
+# 메시지 전송 요청을 위한 데이터 모델 정의
 class MessageRequest(BaseModel):
-    user_id: str
-    room_id: str
-    message: str
+    user_id: str # 메시지를 보내는 사용자 ID
+    room_id: str # 메시지를 보낼 채팅방 ID
+    message: str # 전송할 메시지 본문
 
-@router.post("/chat/send")
-def send_chat(msg: MessageRequest):
+# 메시지 전송 API
+@router.post("/chat/send") # POST 요청으로 /chat/send 경로 호출 시 실행됨
+def send_chat(msg: MessageRequest ):
+    # 메시지 전송 서비스 함수 호출 (user_id, room_id, message 전달)
     success = send_message(msg.user_id, msg.room_id, msg.message)
+    # 전송 성공 여부를 JSON 형태로 응답
     return {"success": success}
 
-@router.get("/chat/{room_id}")
+# 채팅 기록 조회 API
+@router.get("/chat/{room_id}") # GET 요청으로 /chat/<room_id> 호출 시 실행됨
 def fetch_chat(room_id: str):
+     # 해당 채팅방의 기록을 불러와 반환
     return get_chat_history(room_id)
 
 
