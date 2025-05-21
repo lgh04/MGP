@@ -1,10 +1,14 @@
-from fastapi import APIRouter
-from ..services.votecheck_service import has_voted
-router = APIRouter()
+# 특정 사용자가 특정 법안에 대해 이미 투표했는지 여부를 확인하는 API 라우터
+
+from fastapi import APIRouter # FastAPI 라우터 기능 불러오기
+from ..services.votecheck_service import has_voted # 투표 여부 확인을 위한 서비스 함수 불러오기
+router = APIRouter() # ✅ 이 파일의 API를 포함할 라우터 인스턴스 생성
 
 
-@router.get("/vote/check")
+# 사용자 투표 여부 확인 API
+@router.get("/vote/check") # /vote/check?user_id=...&law_id=... 형식으로 GET 요청
 def check_user_vote(user_id: str, law_id: str):
+    # 사용자가 해당 법안에 투표했는지 여부를 확인해 결과 반환
     return {"voted": has_voted(user_id, law_id)}
 
 
