@@ -1,30 +1,37 @@
-import requests
+# 국회 열린 API로부터 법안 목록과 상세 심사정보를 JSON 형식으로 요청·반환하는 외부 데이터 수집 서비스 파일
 
-API_KEY = "4fbf8cf2552c4074ac220162a6f1731c"
-HEADERS = {"Content-Type": "application/json"}
+import requests # 외부 API 요청을 위한 requests 모듈
 
+API_KEY = "4fbf8cf2552c4074ac220162a6f1731c" # 공공데이터 포털에서 발급받은 인증키
+HEADERS = {"Content-Type": "application/json"} # 요청 헤더 (JSON 형식 명시)
+
+# 법안 목록을 가져오는 함수
 def fetch_law_proposals(p_index=1, p_size=100):
     url = "https://open.assembly.go.kr/portal/openapi/nzmimeepazxkubdpn"
     params = {
-        "KEY": API_KEY,
-        "Type": "json",
-        "pIndex": p_index,
-        "pSize": p_size,
+        "KEY": API_KEY, # 인증 키
+        "Type": "json", # 응답 형식
+        "pIndex": p_index, # 페이지 인덱스
+        "pSize": p_size, # 페이지당 항목 수
     }
+    # API 요청 전송
     response = requests.get(url, params=params, headers=HEADERS)
-    return response.json()
+    return response.json() # JSON 응답 반환
 
+# 법안 상세 심사정보를 가져오는 함수
 def fetch_law_details(p_index=1, p_size=100):
-    url = "https://open.assembly.go.kr/portal/openapi/TVBPMBILL11"
+    url = "https://open.assembly.go.kr/portal/openapi/TVBPMBILL11" # 심사정보 API URL
     params = {
-        "KEY": API_KEY,
-        "Type": "json",
-        "pIndex": p_index,
-        "pSize": p_size,
+        "KEY": API_KEY, # 인증 키
+        "Type": "json", # 응답 형식
+        "pIndex": p_index, # 페이지 인덱스
+        "pSize": p_size, # 페이지당 항목 수
     }
+    
+    # API 요청 전송
     response = requests.get(url, params=params, headers=HEADERS)
-    return response.json()
-
+    return response.json() # JSON 응답 반환
+ 
 
 """
 /services/law_api.py  
