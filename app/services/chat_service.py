@@ -1,34 +1,49 @@
-import sqlite3
-from datetime import datetime
+# 사용자의 채팅 메시지를 SQLite DB에 저장하고, 특정 채팅방의 전체 대화 기록을 조회하는 서비스 파일
 
+import sqlite3 # SQLite 데이터베이스를 사용하기 위한 모듈
+from datetime import datetime # 현재 시각 저장을 위한 datetime 모듈
+
+# 메시지 전송 함수
 def send_message(user_id: str, room_id: str, message: str) -> bool:
     try:
+        # SQLite DB 연결
         conn = sqlite3.connect("acton.db")
         cur = conn.cursor()
+
+        # chat_messages 테이블에 새 메시지 삽입
         cur.execute("""
             INSERT INTO chat_messages (user_id, room_id, message, sent_at)
             VALUES (?, ?, ?, ?)
         """, (user_id, room_id, message, datetime.now()))
+
+        # 변경사항 저장
         conn.commit()
         return True
     except Exception as e:
+        # 에러 발생 시 콘솔에 출력하고 False 반환
         print("메시지 전송 실패:", e)
         return False
     finally:
+        # 예외 여부와 상관없이 연결 종료
         conn.close()
 
+# 채팅 기록 조회 함수
 def get_chat_history(room_id: str) -> list:
+    # SQLite DB 연결
     conn = sqlite3.connect("acton.db")
     cur = conn.cursor()
+    
+     # 해당 room_id의 메시지를 시간순으로 정렬하여 조회
     cur.execute("""
         SELECT user_id, message, sent_at 
         FROM chat_messages 
         WHERE room_id = ? 
         ORDER BY sent_at ASC
     """, (room_id,))
-    rows = cur.fetchall()
-    conn.close()
-    return [{"user_id": r[0], "message": r[1], "sent_at": r[2]} for r in rows]
+    
+    rows = cur.fetchall() # 모든 결과 가져오기
+    conn.close() # 연결 종료
+    return [{"user_id": r[0], "message": r[1], "sent_at": r[2]} for r in rows] # 결과를 딕셔너리 리스트로 변환하여 반환
 
 
 
