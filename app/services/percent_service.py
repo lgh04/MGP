@@ -1,19 +1,23 @@
-import sqlite3
+# 특정 법안에 대해 찬성/반대 투표 비율을 계산해 백분율로 반환하는 서비스 파일
 
+import sqlite3 # SQLite DB 연결을 위한 모듈
+
+# 특정 법안의 찬반 투표 비율 계산 함수
 def calculate_vote_percentages(law_id: str) -> dict:
+    # DB 연결
     conn = sqlite3.connect("acton.db")
     cur = conn.cursor()
-    cur.execute("SELECT vote_type FROM votes WHERE law_id = ?", (law_id,))
+    cur.execute("SELECT vote_type FROM votes WHERE law_id = ?", (law_id,)) # 해당 법안에 대한 모든 투표 결과 가져오기
     votes = cur.fetchall()
-    conn.close()
+    conn.close() # 연결 종료
 
-    total = len(votes)
-    yes_count = len([v for (v,) in votes if v == "yes"])
-    no_count = total - yes_count
+    total = len(votes)  # 전체 투표 수 계산
+    yes_count = len([v for (v,) in votes if v == "yes"])  # "yes"인 투표 개수 계산
+    no_count = total - yes_count # "no"는 전체 - yes 개수
 
-    if total == 0:
+    if total == 0: # 투표가 하나도 없으면 0%, 0% 반환
         return {"yes": 0, "no": 0}
-    return {
+    return { # 찬반 비율 계산 후 정수로 변환해 반환
         "yes": int((yes_count / total) * 100),
         "no": int((no_count / total) * 100)
     }
