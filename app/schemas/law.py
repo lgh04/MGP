@@ -1,8 +1,11 @@
-from pydantic import BaseModel
+# 법안의 제목과 설명을 담는 응답용 데이터 모델
 
+from pydantic import BaseModel # Pydantic의 BaseModel을 상속받아 데이터 모델 정의
+
+# 법안 응답 데이터 모델
 class LawResponse(BaseModel):
-    title: str
-    description: str
+    title: str # 법안 제목
+    description: str # 법안 설명
 
 
 
