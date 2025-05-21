@@ -1,33 +1,41 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
-from ..models.bill import Bill
-from ..db import get_db
+# 최근 등록된 '발의 중' 및 '처리 완료' 법안 각각 최대 7개씩 요약해서 제공하는 API 라우터
 
+from fastapi import APIRouter, Depends # FastAPI 라우터 및 의존성 주입 기능
+from sqlalchemy.orm import Session # SQLAlchemy 세션 클래스
+from sqlalchemy import desc # 내림차순 정렬을 위한 SQLAlchemy 함수
+from ..models.bill import Bill # Bill 테이블 모델 불러오기
+from ..db import get_db # DB 세션 생성 함수
+
+# 이 파일의 API들을 묶는 라우터 인스턴스 생성
 router = APIRouter()
 
-@router.get("/summary")
+# 법안 요약 정보 제공 API
+@router.get("/summary") # /summary 경로로 GET 요청 시 실행
 def get_bill_summary(db: Session = Depends(get_db)):
-    result = {}
+    result = {} # 결과를 담을 딕셔너리
 
+    # 'draft'와 'enacted' 상태별로 각각 처리
     for status in ["draft", "enacted"]:
+        # 해당 상태의 법안을 최신순으로 최대 7개 조회
         bills = (
             db.query(Bill)
             .filter(Bill.status == status)
-            .order_by(desc(Bill.created_at))
-            .limit(7)
+            .order_by(desc(Bill.created_at)) # 최신순 정렬
+            .limit(7) # 최대 7개까지
             .all()
         )
 
+        # 결과 요약 형태로 저장
         result[status] = [
             {
-                "name": bill.name,
-                "description": bill.description,
-                "created_at": bill.created_at
+                "name": bill.name, # 법안 이름
+                "description": bill.description, # 간단한 설명
+                "created_at": bill.created_at # 등록일
             }
             for bill in bills
         ]
 
+    # 전체 결과 반환
     return result
 
 
