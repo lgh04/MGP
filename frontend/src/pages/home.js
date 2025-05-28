@@ -1,3 +1,5 @@
+// src/pages/Home.js
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,8 +10,12 @@ function Home() {
   const [nickname, setNickname] = useState(null);
   const [laws, setLaws] = useState({ 공포: [], 발의: [] });
 
+  // ✅ 검색 상태
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchMode, setSearchMode] = useState("발의");
+
   useEffect(() => {
-    const storedNickname = sessionStorage.getItem("nickname"); // localStorage → sessionStorage 변경
+    const storedNickname = sessionStorage.getItem("nickname");
     if (storedNickname) {
       setNickname(storedNickname);
     }
@@ -25,9 +31,15 @@ function Home() {
 
     fetchData();
     const interval = setInterval(fetchData, 60000);
-
     return () => clearInterval(interval);
   }, []);
+
+  // ✅ 검색 버튼 클릭 시 리스트 페이지로 이동
+  const handleSearch = () => {
+    const encodedQuery = encodeURIComponent(searchQuery.trim());
+    const encodedMode = encodeURIComponent(searchMode);
+    navigate(`/list?query=${encodedQuery}&mode=${encodedMode}&sort=latest&page=1`);
+  };
 
   return (
     <div className="home-page">
@@ -47,14 +59,28 @@ function Home() {
 
       <main className="home-center">
         <img src="/main-logo.png" alt="ACT:ON 중앙 로고" className="home-logo-center" />
+
         <div className="search-bar">
-          <select>
-            <option>발의</option>
-            <option>공포</option>
+          <select
+            value={searchMode}
+            onChange={(e) => setSearchMode(e.target.value)}
+          >
+            <option value="발의">발의</option>
+            <option value="공포">공포</option>
           </select>
-          <input type="text" placeholder="발의된 또는 공포된 법안을 검색해 주세요" />
-          <button><span role="img" aria-label="search">🔍</span></button>
+
+          <input
+            type="text"
+            placeholder="발의된 또는 공포된 법안을 검색해 주세요"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+
+          <button onClick={handleSearch}>
+            <span role="img" aria-label="search">🔍</span>
+          </button>
         </div>
+
         <img src="/banner.png" alt="배너 이미지" className="banner-image" />
       </main>
 
@@ -80,8 +106,9 @@ function Home() {
                 ))}
               </div>
 
+              {/* ✅ 여기 수정: mode에 따라 리스트 페이지로 이동 */}
               <div className="law-more-button">
-                <button onClick={() => navigate(`/laws?type=${mode}`)}>＋</button>
+                <button onClick={() => navigate(`/list?query=&mode=${mode}&sort=latest&page=1`)}>＋</button>
               </div>
             </div>
           ))}

@@ -1,18 +1,70 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 🔹 페이지 이동을 위한 훅
-import './list.css';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import "./list.css";
 
 function ListPage() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages] = useState(50);
-  const [filter, setFilter] = useState('latest');
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // ✅ 로그인 닉네임 상태
+  const [nickname, setNickname] = useState(null);
+
+  useEffect(() => {
+    const storedNickname = sessionStorage.getItem("nickname");
+    if (storedNickname) {
+      setNickname(storedNickname);
+    }
+  }, []);
+
+  // ✅ URL에서 초기값 추출
+  const initialQuery = searchParams.get("query") || "";
+  const initialMode = searchParams.get("mode") || "공포";
+  const initialSort = searchParams.get("sort") || "latest";
+  const initialPage = parseInt(searchParams.get("page") || "1");
+
+  const [query, setQuery] = useState(initialQuery);
+  const [searchText, setSearchText] = useState(initialQuery);
+  const [mode, setMode] = useState(initialMode);
+  const [filter, setFilter] = useState(initialSort);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [startPage, setStartPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [items, setItems] = useState([]);
   const pageSize = 10;
 
-  const navigate = useNavigate(); // 🔹 페이지 이동 함수 사용
+  const fetchData = () => {
+    fetch(
+      `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setItems(data.items || []);
+        setTotalPages(data.total_pages || 1);
+      })
+      .catch((err) => {
+        console.error("❌ API 호출 실패:", err);
+        setItems([]);
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [searchText, mode, filter, currentPage]);
+
+  const handleSearchClick = () => {
+    setCurrentPage(1);
+    setStartPage(1);
+    setSearchText(query);
+    navigate(
+      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=1`
+    );
+  };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+    navigate(
+      `/list?query=${encodeURIComponent(searchText)}&mode=${mode}&sort=${filter}&page=${pageNumber}`
+    );
   };
 
   const handleFilterChange = (type) => {
@@ -45,7 +97,7 @@ function ListPage() {
       pages.push(
         <button
           key={i}
-          className={currentPage === i ? 'active' : ''}
+          className={currentPage === i ? "active" : ""}
           onClick={() => handlePageChange(i)}
         >
           {i}
@@ -54,7 +106,11 @@ function ListPage() {
     }
 
     pages.push(
-      <button key="next" onClick={handleNextGroup} disabled={endPage >= totalPages}>
+      <button
+        key="next"
+        onClick={handleNextGroup}
+        disabled={endPage >= totalPages}
+      >
         ▶
       </button>
     );
@@ -68,36 +124,57 @@ function ListPage() {
         <img className="logo" src="/logo.png" alt="ACT:ON Logo" />
 
         <div className="search-bar">
-          <select>
-            <option>발의</option>
-            <option>공포</option>
+          <select value={mode} onChange={(e) => setMode(e.target.value)}>
+            <option value="공포">공포</option>
+            <option value="발의">발의</option>
           </select>
-          <input type="text" placeholder="발의된 또는 공포된 법안을 검색해 주세요" />
-          <button className="search-button">🔍</button>
+          <input
+            type="text"
+            placeholder="발의된 또는 공포된 법안을 검색해 주세요"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button className="search-button" onClick={handleSearchClick}>
+            🔍
+          </button>
         </div>
 
+        {/* ✅ 로그인 상태에 따라 버튼 다르게 표시 */}
         <div className="auth-buttons">
-          <button className="signin-btn" onClick={() => navigate('/login')}>
-            Sign in
-          </button>
-          <button className="register-btn" onClick={() => navigate('/register')}>
-            Register
-          </button>
+          {nickname ? (
+            <div className="user-nickname">{nickname}</div>
+          ) : (
+            <>
+              <button className="signin-btn" onClick={() => navigate("/login")}>Sign in</button>
+              <button className="register-btn" onClick={() => navigate("/register")}>Register</button>
+            </>
+          )}
         </div>
       </div>
 
       <div className="billlist-container">
         <div className="billlist-filter">
-          <button onClick={() => handleFilterChange('latest')} className={filter === 'latest' ? 'active' : ''}>
+          <button
+            onClick={() => handleFilterChange("latest")}
+            className={filter === "latest" ? "active" : ""}
+          >
             최신순
-          </button>
-          <button onClick={() => handleFilterChange('views')} className={filter === 'views' ? 'active' : ''}>
-            열람 횟수 순
           </button>
         </div>
 
-        {Array.from({ length: 7 }).map((_, index) => (
-          <div key={index} className="bill-box"></div>
+        {items.length === 0 && <div>검색 결과가 없습니다.</div>}
+
+        {items.map((item, index) => (
+          <div key={index} className="bill-box">
+            <a href={item.link} target="_blank" rel="noopener noreferrer">
+              <h3>{item.title}</h3>
+            </a>
+            <p><strong>제안일자:</strong> {item.date}</p>
+            <p><strong>제안자:</strong> {item.proposer}</p>
+            <p><strong>의안번호:</strong> {item.bill_no}</p>
+            <p><strong>소관위:</strong> {item.committee}</p>
+            <p><strong>처리결과:</strong> {item.result}</p>
+          </div>
         ))}
 
         <div className="pagination">{renderPagination()}</div>

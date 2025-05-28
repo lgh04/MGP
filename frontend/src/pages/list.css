@@ -1,5 +1,4 @@
-/* List.css */
-
+/* 전체 페이지 배경과 폰트 설정 */
 .list-page {
   background-color: #f5f2ee;
   font-family: 'NanumBarunGothic', sans-serif;
@@ -9,6 +8,7 @@
   align-items: center;
 }
 
+/* 상단 고정 헤더 */
 .list-header {
   width: 100%;
   background: white;
@@ -22,32 +22,15 @@
   top: 0;
   left: 0;
   z-index: 1000;
-  overflow: visible;
 }
+
+/* 로고 크기 */
 .logo {
   height: 40px;
   width: auto;
 }
 
-.auth-buttons button {
-  font-size: 16px;
-  font-family: 'Jacques Francois', serif;
-  padding: 6px 16px;
-  margin-left: 10px;
-  border: none;
-  cursor: pointer;
-}
-
-.signin-btn {
-  background: #f9fafb;
-  border: 3px solid #a7c7e7;
-}
-
-.register-btn {
-  background: #a7c7e7;
-  color: white;
-}
-
+/* 검색창 */
 .search-bar {
   display: flex;
   align-items: center;
@@ -86,6 +69,27 @@
   padding: 4px 8px;
 }
 
+/* 로그인/회원가입 버튼 */
+.auth-buttons button {
+  font-size: 16px;
+  font-family: 'Jacques Francois', serif;
+  padding: 6px 16px;
+  margin-left: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.signin-btn {
+  background: #f9fafb;
+  border: 3px solid #a7c7e7;
+}
+
+.register-btn {
+  background: #a7c7e7;
+  color: white;
+}
+
+/* 리스트 컨테이너 */
 .billlist-container {
   width: 1184px;
   background-color: white;
@@ -97,6 +101,7 @@
   gap: 20px;
 }
 
+/* 정렬 필터 버튼 */
 .billlist-filter {
   display: flex;
   gap: 20px;
@@ -119,12 +124,37 @@
   padding: 0;
 }
 
+.billlist-filter button.active {
+  text-decoration: underline;
+  color: #a03232;
+}
+
+/* 법안 박스 */
 .bill-box {
   width: 100%;
-  height: 327px;
   background-color: #f9f9f9;
   border: 1px solid #bfc0c0;
   border-radius: 8px;
+  padding: 20px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+.bill-box a {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1963ac;
+  text-decoration: none;
+}
+
+.bill-box a:hover {
+  text-decoration: underline;
+}
+
+.bill-box div {
+  font-size: 14px;
+  color: #444;
+  margin-top: 6px;
 }
 
 /* 페이지네이션 */
