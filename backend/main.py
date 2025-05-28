@@ -1,5 +1,3 @@
-# 📁 backend/main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -23,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ 라우터 등록
-app.include_router(user_router, prefix="/user", tags=["user"])
+# ✅ 라우터 등록 (user_router prefix를 복수형 users로 수정)
+app.include_router(user_router, prefix="/users", tags=["user"])
 app.include_router(login_router, prefix="/auth", tags=["login"])
 app.include_router(law_router, prefix="/api", tags=["law"])  # /api/laws 로 접근 가능
