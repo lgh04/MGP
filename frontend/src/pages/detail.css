@@ -1,0 +1,201 @@
+.detail-page {
+  background-color: #f5f2ee;
+  font-family: 'NanumBarunGothic', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.detail-header {
+  width: 100%;
+  background: white;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 40px;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  overflow: visible;
+}
+
+.logo {
+  height: 40px;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.signin-btn,
+.register-btn {
+  font-size: 16px;
+  font-family: 'Jacques Francois', serif;
+  padding: 6px 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.signin-btn {
+  background: #f9fafb;
+  border: 3px solid #a7c7e7;
+}
+
+.register-btn {
+  background: #a7c7e7;
+  color: white;
+}
+
+.detail-container {
+  width: 1184px;
+  margin-top: 120px;
+  margin-bottom: 60px;
+  padding: 40px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 900px;
+  padding-top: 100px;
+}
+
+.bill-title {
+  font-size: 70px;
+  font-family: 'Jacques Francois', serif;
+  color: #5d5e5e;
+  margin-bottom: 40px;
+}
+
+.comment-toggle {
+  font-size: 18px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vote-box {
+  border: 1px solid #000;
+  border-radius: 16px;
+  padding: 30px 20px 40px 20px;
+  background: #fff;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.vote-bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.bar-wrapper {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.bar-label-top {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.bar-label-top .check {
+  margin: 0 6px;
+}
+
+.bar-wrapper:first-child .bar-label-top {
+  justify-content: flex-start;
+}
+
+.bar-wrapper:last-child .bar-label-top {
+  justify-content: flex-end;
+}
+
+/* 기본 막대 배경 */
+.bar-background {
+  background: #d9d9d9;
+  height: 46px;
+  width: 100%;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* 반대 막대에만 적용되는 RTL 스타일 */
+.bar-background.disagree-background {
+  direction: rtl;
+}
+
+.bar-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+  background-color: #b1cbed;
+}
+
+.agree-bar {
+  background-color: #b1cbed;
+}
+
+.disagree-bar {
+  background-color: #b1cbed;
+  direction: ltr;               /* 텍스트 정방향 유지 */
+  display: flex;                /* ✅ flex 적용 필수 */
+  align-items: center;          /* ✅ 수직 중앙 정렬 */
+  justify-content: center;      /* ✅ 수평 중앙 정렬 */
+}
+
+
+.bar-percent-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+}
+
+.vs-text {
+  font-size: 28px;
+  font-weight: bold;
+  color: black;
+  margin-top: 38px;
+}
+
+.participant-count-inside {
+  font-size: 14px;
+  color: #777;
+  margin-top: 6px;
+  width: 100%;
+  text-align: right;
+}
+
+.discussion-text-outside {
+  font-size: 18px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.bill-image {
+  height: 0;
+  margin: 0;
+}
+
+.bill-content {
+  display: none;
+}
