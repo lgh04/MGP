@@ -4,9 +4,8 @@ import "./login.css";
 
 function Login() {
   const navigate = useNavigate();
-  const [userNickname, setUserNickname] = useState(null); // ✅ 닉네임 저장
+  const [userNickname, setUserNickname] = useState(null);
 
-  // ✅ 이메일/비밀번호 상태 추가
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -22,9 +21,9 @@ function Login() {
 
       const data = await res.json();
       if (res.ok) {
-        setUserNickname(data.nickname); // ✅ 닉네임 상태 저장
-        localStorage.setItem("nickname", data.nickname); // 지속 저장 원할 경우 사용
-        navigate("/"); // 로그인 성공 후 이동
+        setUserNickname(data.nickname);
+        sessionStorage.setItem("nickname", data.nickname); // localStorage → sessionStorage 변경
+        navigate("/");
       } else {
         alert(data.detail);
       }
@@ -35,11 +34,10 @@ function Login() {
 
   return (
     <div className="login-page">
-      {/* 상단 헤더 */}
       <header className="login-header">
         <img src="/logo.png" alt="ACT:ON 로고" className="logo-top" />
         {userNickname ? (
-          <div className="user-nickname">{userNickname}</div> // ✅ 닉네임 표시
+          <div className="user-nickname">{userNickname}</div>
         ) : (
           <div className="auth-buttons">
             <button className="signin-btn" onClick={() => navigate('/login')}>Sign in</button>
@@ -48,12 +46,10 @@ function Login() {
         )}
       </header>
 
-      {/* 중앙 로고 */}
       <div className="logo-center">
         <img src="/main-logo.png" alt="중앙 슬로건 로고" className="center-logo" />
       </div>
 
-      {/* 로그인 폼 */}
       <main className="login-form-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <label>
@@ -76,7 +72,6 @@ function Login() {
             />
           </label>
 
-          {/* ✅ 입력값이 없으면 비활성화 */}
           <button
             type="submit"
             className="submit-btn"
@@ -97,4 +92,3 @@ function Login() {
 }
 
 export default Login;
-

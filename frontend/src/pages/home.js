@@ -9,7 +9,7 @@ function Home() {
   const [laws, setLaws] = useState({ 공포: [], 발의: [] });
 
   useEffect(() => {
-    const storedNickname = localStorage.getItem("nickname");
+    const storedNickname = sessionStorage.getItem("nickname"); // localStorage → sessionStorage 변경
     if (storedNickname) {
       setNickname(storedNickname);
     }
@@ -17,14 +17,14 @@ function Home() {
     const fetchData = async () => {
       try {
         const res = await axios.get("http://localhost:8000/api/laws");
-        setLaws(res.data); // { 공포: [...], 발의: [...] }
+        setLaws(res.data);
       } catch (error) {
         console.error("법안 불러오기 실패:", error);
       }
     };
 
-    fetchData(); // 첫 호출
-    const interval = setInterval(fetchData, 60000); // ✅ 1분마다 재호출
+    fetchData();
+    const interval = setInterval(fetchData, 60000);
 
     return () => clearInterval(interval);
   }, []);
@@ -92,4 +92,3 @@ function Home() {
 }
 
 export default Home;
-
