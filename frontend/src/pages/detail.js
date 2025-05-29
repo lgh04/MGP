@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 🔹 추가
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import './detail.css';
 import CommentPopup from '../components/CommentPopup';
 
 function DetailPage() {
   const [selected, setSelected] = useState(null);
   const [showComments, setShowComments] = useState(false);
+  const [lawData, setLawData] = useState(null);
+
   const agreePercent = 60;
   const disagreePercent = 40;
   const totalParticipants = '10만명 참여중';
 
-  const navigate = useNavigate(); // 🔹 페이지 이동 함수
+  const navigate = useNavigate();
+  const { billId } = useParams();
+
+  // ✅ API 호출
+  useEffect(() => {
+    fetch(`http://localhost:8000/api/law/${billId}`)
+      .then(res => res.json())
+      .then(data => setLawData(data))
+      .catch(err => {
+        console.error("법안 정보를 불러오는 데 실패했습니다:", err);
+      });
+  }, [billId]);
 
   return (
     <div className="detail-page">
@@ -23,7 +37,7 @@ function DetailPage() {
       </header>
 
       <main className="detail-container">
-        <h1 className="bill-title">법안 제목</h1>
+        <h1 className="bill-title">{lawData?.BILL_NAME || '법안 제목 불러오는 중...'}</h1>
 
         {selected && (
           <div className="comment-toggle" onClick={() => setShowComments(true)}>
@@ -71,7 +85,20 @@ function DetailPage() {
         {selected && <div className="discussion-text-outside">토론방 참여하기</div>}
 
         <div className="bill-image"></div>
-        <div className="bill-content"></div>
+        <div className="bill-content">
+          {lawData ? (
+            <>
+              <p><strong>제안자:</strong> {lawData.PROPOSER}</p>
+              <p><strong>소관 위원회:</strong> {lawData.COMMITTEE}</p>
+              <p><strong>제안일:</strong> {lawData.PROPOSE_DT}</p>
+              <p><strong>심사 결과:</strong> {lawData.PROC_RESULT}</p>
+              <p><strong>의결일:</strong> {lawData.PROC_DT}</p>
+              <p><strong>대표 발의자:</strong> {lawData.RST_PROPOSER}</p>
+            </>
+          ) : (
+            <p>법안 상세 정보를 불러오는 중...</p>
+          )}
+        </div>
       </main>
 
       {showComments && (

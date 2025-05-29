@@ -4,15 +4,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './home.css';
+import DebatePopup from '../components/DebatePopup'; // 팝업 컴포넌트 import
 
 function Home() {
   const navigate = useNavigate();
   const [nickname, setNickname] = useState(null);
   const [laws, setLaws] = useState({ 공포: [], 발의: [] });
 
-  // ✅ 검색 상태
+  // 검색 상태
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState("발의");
+
+  // 팝업 상태
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const storedNickname = sessionStorage.getItem("nickname");
@@ -34,7 +38,6 @@ function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ 검색 버튼 클릭 시 리스트 페이지로 이동
   const handleSearch = () => {
     const encodedQuery = encodeURIComponent(searchQuery.trim());
     const encodedMode = encodeURIComponent(searchMode);
@@ -47,7 +50,13 @@ function Home() {
         <img src="/logo.png" alt="ACT:ON 로고" className="logo-top" />
         <div className="auth-buttons">
           {nickname ? (
-            <div className="user-nickname">{nickname}</div>
+            <div
+              className="user-nickname"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setShowPopup(true)}
+            >
+              {nickname}
+            </div>
           ) : (
             <>
               <button className="signin-btn" onClick={() => navigate('/login')}>Sign in</button>
@@ -106,7 +115,6 @@ function Home() {
                 ))}
               </div>
 
-              {/* ✅ 여기 수정: mode에 따라 리스트 페이지로 이동 */}
               <div className="law-more-button">
                 <button onClick={() => navigate(`/list?query=&mode=${mode}&sort=latest&page=1`)}>＋</button>
               </div>
@@ -114,6 +122,9 @@ function Home() {
           ))}
         </div>
       </section>
+
+      {/* 팝업 */}
+      {showPopup && <DebatePopup onClose={() => setShowPopup(false)} />}
     </div>
   );
 }
