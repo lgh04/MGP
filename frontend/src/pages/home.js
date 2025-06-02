@@ -107,9 +107,12 @@ function Home() {
               <div className="law-scroll-box">
                 {laws[mode].slice(0, 8).map((law, idx) => (
                   <div key={idx} className="law-item">
-                    <a href={law.link} target="_blank" rel="noreferrer">
+                    <div 
+                      onClick={() => navigate(`/detail/${law.bill_id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       {law.title}
-                    </a>
+                    </div>
                     <div className="law-date">{law.date}</div>
                   </div>
                 ))}

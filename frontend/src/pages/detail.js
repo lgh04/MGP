@@ -17,12 +17,24 @@ function DetailPage() {
 
   useEffect(() => {
     if (!billId) return;
-    fetch(`http://localhost:8000/api/law/${billId}`)
-      .then((res) => res.json())
-      .then((data) => setLawData(data))
-      .catch((err) => {
+    
+    const fetchLawDetail = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/law/${billId}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          console.error("법안 정보 조회 실패:", data.detail || data.error);
+          return;
+        }
+        
+        setLawData(data);
+      } catch (err) {
         console.error("법안 정보를 불러오는 데 실패했습니다:", err);
-      });
+      }
+    };
+
+    fetchLawDetail();
   }, [billId]);
 
   return (

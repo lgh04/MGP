@@ -141,7 +141,7 @@
 
 .law-box {
   width: 400px;
-  min-height: 400px;
+  min-height: 500px;
   border: 1px solid black;
   padding: 20px;
   background: #fff;
@@ -194,14 +194,15 @@
   width: 100%;
 }
 
-.law-item a {
+.law-item > div:first-child {
   font-size: 16px;
   color: #1963ac;
   text-decoration: none;
   font-weight: 500;
+  cursor: pointer;
 }
 
-.law-item a:hover {
+.law-item > div:first-child:hover {
   text-decoration: underline;
 }
 
@@ -212,7 +213,8 @@
 }
 
 .law-scroll-box {
-  max-height: 400px;
+  max-height: 500px;
   overflow: hidden;
   padding-right: 10px;
+  text-align: left;
 }

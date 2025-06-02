@@ -62,7 +62,8 @@ def fetch_all_laws():
             "proposer": item.get("PROPOSER", "제안자 없음"),
             "bill_no": item.get("BILL_NO", "의안번호 없음"),
             "committee": item.get("CURR_COMMITTEE", "소관위 없음"),
-            "result": item.get("PROC_RESULT_CD", "결과 없음")
+            "result": item.get("PROC_RESULT_CD", "결과 없음"),
+            "bill_id": item.get("BILL_ID", "")
         }
 
         if status in processed_statuses:

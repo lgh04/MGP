@@ -168,7 +168,7 @@ function ListPage() {
         {items.map((item, index) => (
           <div key={index} className="bill-box">
             <div
-              onClick={() => navigate(`/detail/${item.BILL_ID}`)}
+              onClick={() => navigate(`/detail/${item.bill_id}`)}
               style={{ cursor: "pointer" }}
             >
               <h3>{item.title}</h3>

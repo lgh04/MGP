@@ -22,7 +22,7 @@ app = FastAPI()
 # ✅ CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,9 +39,19 @@ app.include_router(lawdetail_router, prefix="/api", tags=["lawdetail"])  # ⬅ �
 @app.get("/api/law/{bill_id}")
 def get_law(bill_id: str):
     try:
+        if not bill_id or bill_id == "undefined":
+            raise HTTPException(status_code=400, detail="유효하지 않은 법안 ID입니다.")
+            
         data = fetch_law_detail(bill_id)
-        if not data:
-            raise HTTPException(status_code=404, detail="해당 법안을 찾을 수 없습니다.")
+        if isinstance(data, dict) and "error" in data:
+            raise HTTPException(status_code=404, detail=data["error"])
+            
         return JSONResponse(content=data)
+        
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        return JSONResponse(
+            content={"error": "내부 서버 오류가 발생했습니다.", "detail": str(e)},
+            status_code=500
+        )

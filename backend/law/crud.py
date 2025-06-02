@@ -52,7 +52,8 @@ def fetch_all_laws():
         entry = {
             "title": item.get("BILL_NAME", "제목 없음"),
             "link": link,
-            "date": item.get("PROPOSE_DT", "날짜 없음")
+            "date": item.get("PROPOSE_DT", "날짜 없음"),
+            "bill_id": item.get("BILL_ID", "")
         }
 
         if status in processed_statuses:
