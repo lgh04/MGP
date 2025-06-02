@@ -6,7 +6,6 @@ function ListPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // ✅ 로그인 닉네임 상태
   const [nickname, setNickname] = useState(null);
 
   useEffect(() => {
@@ -16,7 +15,6 @@ function ListPage() {
     }
   }, []);
 
-  // ✅ URL에서 초기값 추출
   const initialQuery = searchParams.get("query") || "";
   const initialMode = searchParams.get("mode") || "공포";
   const initialSort = searchParams.get("sort") || "latest";
@@ -32,22 +30,22 @@ function ListPage() {
   const [items, setItems] = useState([]);
   const pageSize = 10;
 
-  const fetchData = () => {
-    fetch(
-      `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setItems(data.items || []);
-        setTotalPages(data.total_pages || 1);
-      })
-      .catch((err) => {
-        console.error("❌ API 호출 실패:", err);
-        setItems([]);
-      });
-  };
-
   useEffect(() => {
+    const fetchData = () => {
+      fetch(
+        `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setItems(data.items || []);
+          setTotalPages(data.total_pages || 1);
+        })
+        .catch((err) => {
+          console.error("❌ API 호출 실패:", err);
+          setItems([]);
+        });
+    };
+
     fetchData();
   }, [searchText, mode, filter, currentPage]);
 
@@ -139,14 +137,17 @@ function ListPage() {
           </button>
         </div>
 
-        {/* ✅ 로그인 상태에 따라 버튼 다르게 표시 */}
         <div className="auth-buttons">
           {nickname ? (
             <div className="user-nickname">{nickname}</div>
           ) : (
             <>
-              <button className="signin-btn" onClick={() => navigate("/login")}>Sign in</button>
-              <button className="register-btn" onClick={() => navigate("/register")}>Register</button>
+              <button className="signin-btn" onClick={() => navigate("/login")}>
+                Sign in
+              </button>
+              <button className="register-btn" onClick={() => navigate("/register")}>
+                Register
+              </button>
             </>
           )}
         </div>
@@ -166,9 +167,12 @@ function ListPage() {
 
         {items.map((item, index) => (
           <div key={index} className="bill-box">
-            <a href={item.link} target="_blank" rel="noopener noreferrer">
+            <div
+              onClick={() => navigate(`/detail/${item.BILL_ID}`)}
+              style={{ cursor: "pointer" }}
+            >
               <h3>{item.title}</h3>
-            </a>
+            </div>
             <p><strong>제안일자:</strong> {item.date}</p>
             <p><strong>제안자:</strong> {item.proposer}</p>
             <p><strong>의안번호:</strong> {item.bill_no}</p>
