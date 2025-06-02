@@ -7,13 +7,22 @@ function DetailPage() {
   const [selected, setSelected] = useState(null);
   const [showComments, setShowComments] = useState(false);
   const [lawData, setLawData] = useState(null);
-
-  const agreePercent = 60;
-  const disagreePercent = 40;
-  const totalParticipants = '10만명 참여중';
+  const [voteData, setVoteData] = useState({
+    agree_percent: 0,
+    disagree_percent: 0,
+    total_count: 0
+  });
+  const [nickname, setNickname] = useState(null);
 
   const navigate = useNavigate();
   const { billId } = useParams();
+
+  useEffect(() => {
+    const storedNickname = sessionStorage.getItem("nickname");
+    if (storedNickname) {
+      setNickname(storedNickname);
+    }
+  }, []);
 
   useEffect(() => {
     if (!billId) return;
@@ -37,13 +46,112 @@ function DetailPage() {
     fetchLawDetail();
   }, [billId]);
 
+  useEffect(() => {
+    if (!billId) return;
+
+    const fetchVoteStatus = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+          setVoteData(data);
+        }
+      } catch (err) {
+        console.error("투표 현황을 불러오는 데 실패했습니다:", err);
+      }
+    };
+
+    fetchVoteStatus();
+
+    const fetchUserVote = async () => {
+      if (!nickname) return;
+
+      try {
+        const token = sessionStorage.getItem('token');
+        const response = await fetch(`http://localhost:8000/api/vote/${billId}/user`, {
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        
+        if (response.ok && data.vote_type) {
+          setSelected(data.vote_type);
+        }
+      } catch (err) {
+        console.error("사용자 투표 정보를 불러오는 데 실패했습니다:", err);
+      }
+    };
+
+    fetchUserVote();
+  }, [billId, nickname]);
+
+  const handleVote = async (voteType) => {
+    if (!nickname) {
+      alert("투표하려면 로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({ vote_type: voteType })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "투표에 실패했습니다.");
+      }
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setSelected(voteType);
+        setVoteData(data);
+      } else {
+        alert(data.detail || "투표에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error("투표 처리 중 오류가 발생했습니다:", err);
+      alert(err.message || "투표 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  const formatNumber = (num) => {
+    if (num >= 10000) {
+      return Math.floor(num / 10000) + "만";
+    }
+    return num.toLocaleString();
+  };
+
   return (
     <div className="detail-page">
       <header className="detail-header">
         <img src="/logo.png" alt="ACT:ON 로고" className="logo" />
         <div className="auth-buttons">
-          <button className="signin-btn" onClick={() => navigate('/login')}>Sign in</button>
-          <button className="register-btn" onClick={() => navigate('/register')}>Register</button>
+          {nickname ? (
+            <div className="user-nickname">{nickname}</div>
+          ) : (
+            <>
+              <button className="signin-btn" onClick={() => navigate('/login')}>Sign in</button>
+              <button className="register-btn" onClick={() => navigate('/register')}>Register</button>
+            </>
+          )}
         </div>
       </header>
 
@@ -58,30 +166,38 @@ function DetailPage() {
 
         <div className="vote-box">
           <div className="vote-bars">
-            <div className="bar-wrapper" onClick={() => setSelected('agree')}>
+            <div className="bar-wrapper" onClick={() => handleVote('agree')}>
               <div className="bar-label-top">
                 찬성 {selected === 'agree' && '✔'}
               </div>
               <div className="bar-background">
-                <div className="bar-fill agree-bar" style={{ width: selected ? `${agreePercent}%` : '0%' }}>
-                  {selected && <span className="bar-percent-text">{agreePercent}%</span>}
+                <div 
+                  className="bar-fill agree-bar" 
+                  style={{ width: `${voteData.agree_percent}%` }}
+                >
+                  <span className="bar-percent-text">{voteData.agree_percent}%</span>
                 </div>
               </div>
             </div>
 
             <div className="vs-text">VS</div>
 
-            <div className="bar-wrapper" onClick={() => setSelected('disagree')}>
+            <div className="bar-wrapper" onClick={() => handleVote('disagree')}>
               <div className="bar-label-top">
                 {selected === 'disagree' && '✔'} 반대
               </div>
               <div className="bar-background disagree-background">
-                <div className="bar-fill disagree-bar" style={{ width: selected ? `${disagreePercent}%` : '0%' }}>
-                  {selected && <span className="bar-percent-text">{disagreePercent}%</span>}
+                <div 
+                  className="bar-fill disagree-bar" 
+                  style={{ width: `${voteData.disagree_percent}%` }}
+                >
+                  <span className="bar-percent-text">{voteData.disagree_percent}%</span>
                 </div>
               </div>
-              {selected && <div className="participant-count-inside">{totalParticipants}</div>}
             </div>
+          </div>
+          <div className="participant-count">
+            {formatNumber(voteData.total_count)}명 참여중
           </div>
         </div>
 

@@ -25,33 +25,37 @@ def fetch_law_detail(bill_id: str):
     try:
         logger.info(f"API 요청: {url} - 파라미터: {params}")
         response = requests.get(url, params=params)
+        response.raise_for_status()  # HTTP 오류 발생시 예외 발생
         
-        # HTTP 상태 코드 확인
         logger.info(f"API 응답 상태 코드: {response.status_code}")
         
-        if response.status_code != 200:
-            logger.error(f"API 오류 응답: {response.status_code} - {response.text}")
-            return {"error": "API 서버 오류가 발생했습니다."}
-
         try:
             data = response.json()
             logger.info(f"API 응답 데이터: {json.dumps(data, ensure_ascii=False, indent=2)}")
             
             # API 응답 구조 검증
-            if not isinstance(data, dict):
-                logger.error("API 응답이 올바른 JSON 객체가 아닙니다.")
-                return {"error": "잘못된 API 응답 형식"}
+            if not data:
+                logger.error("API 응답이 비어있습니다.")
+                return {"error": "API 응답이 비어있습니다."}
                 
             # TVBPMBILL11 키가 있는지 확인
             if "TVBPMBILL11" not in data:
-                logger.error("API 응답에 TVBPMBILL11 키가 없습니다.")
+                logger.error(f"API 응답에 TVBPMBILL11 키가 없습니다. 응답: {data}")
                 return {"error": "데이터를 찾을 수 없습니다."}
                 
             tvbpm_data = data["TVBPMBILL11"]
-            if not isinstance(tvbpm_data, list) or len(tvbpm_data) < 2:
-                logger.error(f"TVBPMBILL11 데이터 구조 오류: {tvbpm_data}")
-                return {"error": "잘못된 데이터 구조"}
+            
+            # 응답 데이터가 리스트가 아닌 경우 처리
+            if not isinstance(tvbpm_data, list):
+                logger.error(f"TVBPMBILL11 데이터가 리스트가 아닙니다: {tvbpm_data}")
+                return {"error": "잘못된 데이터 형식"}
                 
+            # 응답 데이터가 비어있는 경우 처리
+            if len(tvbpm_data) < 2:
+                logger.error(f"TVBPMBILL11 데이터가 비어있습니다: {tvbpm_data}")
+                return {"error": "데이터가 비어있습니다"}
+                
+            # row 데이터 가져오기
             rows = tvbpm_data[1].get("row", [])
             if not rows:
                 logger.warning(f"검색된 법안 정보가 없습니다. (bill_id: {bill_id})")
@@ -63,6 +67,10 @@ def fetch_law_detail(bill_id: str):
             logger.error(f"JSON 파싱 실패: {str(e)}\n응답 내용: {response.text}")
             return {"error": "API 응답을 파싱할 수 없습니다."}
             
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP 오류 발생: {str(e)}")
+        return {"error": f"API 서버 오류: {response.status_code}"}
+        
     except requests.exceptions.RequestException as e:
         logger.error(f"API 요청 실패: {str(e)}")
         return {"error": "API 서버에 연결할 수 없습니다."}

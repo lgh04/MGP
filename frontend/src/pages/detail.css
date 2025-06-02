@@ -147,6 +147,8 @@
   border-radius: 9999px;
   transition: width 0.4s ease;
   background-color: #b1cbed;
+  min-width: 40px;
+  position: relative;
 }
 
 .agree-bar {
@@ -165,6 +167,14 @@
   font-size: 16px;
   font-weight: bold;
   color: #000;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+}
+
+.bar-fill:hover .bar-percent-text {
+  opacity: 1;
 }
 
 .vs-text {
@@ -174,12 +184,13 @@
   margin-top: 38px;
 }
 
-.participant-count-inside {
+.participant-count {
   font-size: 14px;
   color: #777;
   margin-top: 6px;
   width: 100%;
   text-align: right;
+  color: #666;
 }
 
 .discussion-text-outside {

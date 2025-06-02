@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
 from . import schemas, crud
-from backend.db.database import SessionLocal
+from backend.db.database import SessionLocal, get_db
 from .email_service import send_email
 import random, time, re
+from sqlalchemy.orm import Session
+from typing import Dict
 
 router = APIRouter()
 code_storage = {}
@@ -92,3 +94,10 @@ def verify_email_code(data: VerifyRequest):
     if record["code"] != data.code:
         raise HTTPException(status_code=400, detail="인증번호 불일치")
     return {"message": "이메일 인증 성공"}
+
+@router.post("/", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)

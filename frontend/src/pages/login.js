@@ -5,7 +5,6 @@ import "./login.css";
 function Login() {
   const navigate = useNavigate();
   const [userNickname, setUserNickname] = useState(null);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -13,22 +12,29 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8000/auth/login", {
+      const formData = new FormData();
+      formData.append('username', email);  // OAuth2 형식에 맞춰 username으로 전송
+      formData.append('password', password);
+
+      const res = await fetch("http://localhost:8000/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: formData,
+        credentials: 'include'
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        setUserNickname(data.nickname);
-        sessionStorage.setItem("nickname", data.nickname); // localStorage → sessionStorage 변경
-        navigate("/");
-      } else {
-        alert(data.detail);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || '로그인에 실패했습니다.');
       }
+
+      const data = await res.json();
+      setUserNickname(data.user.nickname);
+      sessionStorage.setItem("nickname", data.user.nickname);
+      sessionStorage.setItem("token", data.access_token);
+      navigate("/");
     } catch (err) {
-      console.error("로그인 실패", err);
+      console.error("로그인 실패:", err);
+      alert(err.message);
     }
   };
 
@@ -59,6 +65,7 @@ function Login() {
               placeholder="이메일 주소를 입력해주세요."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </label>
 
@@ -69,6 +76,7 @@ function Login() {
               placeholder="비밀번호를 입력해주세요."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </label>
 

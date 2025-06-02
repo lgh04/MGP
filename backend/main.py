@@ -8,13 +8,13 @@ from backend.login.routes import router as login_router
 from backend.law.routes import router as law_router
 from backend.lawlist.routes import router as lawlist_router
 from backend.lawdetail.routes import router as lawdetail_router  # ✅ 상세 라우터 추가
+from backend.vote.routes import router as vote_router  # 투표 라우터 추가
 
 # ✅ 상세 API용 크루드 함수
 from backend.lawdetail.crud import fetch_law_detail
 
 # ✅ DB 설정
 from backend.db.database import Base, engine
-Base.metadata.create_all(bind=engine)
 
 # ✅ 앱 생성
 app = FastAPI()
@@ -25,33 +25,41 @@ app.add_middleware(
     allow_origins=["http://localhost:3000", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "Authorization", "Content-Type"],
 )
 
 # ✅ 라우터 등록
-app.include_router(user_router, prefix="/users", tags=["user"])
-app.include_router(login_router, prefix="/auth", tags=["login"])
+app.include_router(user_router, prefix="/api", tags=["users"])
+app.include_router(login_router)  # prefix 제거 (이미 라우터에서 /api 포함)
 app.include_router(law_router, prefix="/api", tags=["law"])
 app.include_router(lawlist_router, prefix="/api", tags=["lawlist"])
-app.include_router(lawdetail_router, prefix="/api", tags=["lawdetail"])  # ⬅ 상세 라우터까지 등록함
+app.include_router(lawdetail_router, prefix="/api", tags=["lawdetail"])
+app.include_router(vote_router, tags=["vote"])  # prefix 제거 (이미 라우터에서 /api 포함)
 
 # ✅ 상세 단건 조회용 직접 라우트 (추가로 필요한 경우 사용)
 @app.get("/api/law/{bill_id}")
-def get_law(bill_id: str):
+async def get_law(bill_id: str):
     try:
+        # bill_id가 없거나 undefined인 경우 즉시 에러 반환
         if not bill_id or bill_id == "undefined":
-            raise HTTPException(status_code=400, detail="유효하지 않은 법안 ID입니다.")
+            return JSONResponse(
+                status_code=400,
+                content={"error": "유효하지 않은 법안 ID입니다."}
+            )
             
         data = fetch_law_detail(bill_id)
+        
+        # 에러 응답 처리
         if isinstance(data, dict) and "error" in data:
-            raise HTTPException(status_code=404, detail=data["error"])
+            return JSONResponse(
+                status_code=404,
+                content=data
+            )
             
         return JSONResponse(content=data)
         
-    except HTTPException as he:
-        raise he
     except Exception as e:
         return JSONResponse(
-            content={"error": "내부 서버 오류가 발생했습니다.", "detail": str(e)},
-            status_code=500
+            status_code=500,
+            content={"error": "내부 서버 오류가 발생했습니다.", "detail": str(e)}
         )
