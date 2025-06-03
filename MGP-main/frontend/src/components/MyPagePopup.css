@@ -1,0 +1,164 @@
+.mypage-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 600px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.mypage-header {
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mypage-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+.mypage-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.mypage-tabs button {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.mypage-tabs button.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+}
+
+.mypage-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.discussions-list {
+  padding: 16px;
+}
+
+.no-discussions {
+  text-align: center;
+  color: #666;
+  padding: 32px 16px;
+}
+
+.discussion-item {
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: background-color 0.2s;
+}
+
+.discussion-item:hover {
+  background-color: #f5f5f5;
+}
+
+.discussion-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.discussion-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.last-message {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.discussion-time {
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+}
+
+.profile-content {
+  padding: 16px;
+}
+
+.profile-info {
+  margin-bottom: 24px;
+}
+
+.profile-info p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.logout-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+}
+
+/* 스크롤바 스타일링 */
+.mypage-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mypage-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.mypage-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.mypage-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} 
