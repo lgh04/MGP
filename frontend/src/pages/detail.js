@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import './detail.css';
 import CommentPopup from '../components/CommentPopup';
 import MyPagePopup from '../components/MyPagePopup';
+import DiscussionPopup from '../components/DiscussionPopup';
 
 function DetailPage() {
   const [selected, setSelected] = useState(null);
@@ -15,6 +16,9 @@ function DetailPage() {
     total_count: 0
   });
   const [nickname, setNickname] = useState(null);
+  const [isParticipating, setIsParticipating] = useState(false);
+  const [showDiscussion, setShowDiscussion] = useState(false);
+  const [discussionId, setDiscussionId] = useState(null);
 
   const navigate = useNavigate();
   const { billId } = useParams();
@@ -96,6 +100,30 @@ function DetailPage() {
     fetchUserVote();
   }, [billId, nickname]);
 
+  useEffect(() => {
+    const checkParticipation = async () => {
+      if (!nickname) return;
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        setIsParticipating(data.is_participating);
+        if (data.is_participating) {
+          setDiscussionId(data.id);
+        }
+      } catch (error) {
+        console.error('토론방 참여 상태 확인 실패:', error);
+      }
+    };
+
+    checkParticipation();
+  }, [billId, nickname]);
+
   const handleVote = async (voteType) => {
     if (!nickname) {
       alert("투표하려면 로그인이 필요합니다.");
@@ -134,6 +162,27 @@ function DetailPage() {
     }
   };
 
+  const handleDiscussionClick = async () => {
+    if (!nickname) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      setIsParticipating(true);
+      setDiscussionId(data.id);
+    } catch (error) {
+      console.error('토론방 참여 실패:', error);
+    }
+  };
+
   const formatNumber = (num) => {
     if (num >= 10000) {
       return Math.floor(num / 10000) + "만";
@@ -162,50 +211,60 @@ function DetailPage() {
       <main className="detail-container">
         <h1 className="bill-title">{lawData?.BILL_NAME || '법안 제목 불러오는 중...'}</h1>
 
-        {selected && (
-          <div className="comment-toggle" onClick={() => setShowComments(true)}>
-            댓글보기
-          </div>
-        )}
-
-        <div className="vote-box">
-          <div className="vote-bars">
-            <div className="bar-wrapper" onClick={() => handleVote('agree')}>
-              <div className="bar-label-top">
-                찬성 {selected === 'agree' && '✔'}
+        <div className="vote-section">
+          {selected && (
+            <div className="vote-actions">
+              <div className="comment-toggle" onClick={() => setShowComments(true)}>
+                댓글보기
               </div>
-              <div className="bar-background">
-                <div 
-                  className="bar-fill agree-bar" 
-                  style={{ width: `${voteData.agree_percent}%` }}
-                >
-                  <span className="bar-percent-text">{voteData.agree_percent}%</span>
+            </div>
+          )}
+
+          <div className="vote-box">
+            <div className="vote-bars">
+              <div className="bar-wrapper" onClick={() => handleVote('agree')}>
+                <div className="bar-label-top">
+                  찬성 {selected === 'agree' && '✔'}
+                </div>
+                <div className="bar-background">
+                  <div 
+                    className="bar-fill agree-bar" 
+                    style={{ width: `${voteData.agree_percent}%` }}
+                  >
+                    <span className="bar-percent-text">{voteData.agree_percent}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="vs-text">VS</div>
+
+              <div className="bar-wrapper" onClick={() => handleVote('disagree')}>
+                <div className="bar-label-top">
+                  {selected === 'disagree' && '✔'} 반대
+                </div>
+                <div className="bar-background disagree-background">
+                  <div 
+                    className="bar-fill disagree-bar" 
+                    style={{ width: `${voteData.disagree_percent}%` }}
+                  >
+                    <span className="bar-percent-text">{voteData.disagree_percent}%</span>
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div className="vs-text">VS</div>
-
-            <div className="bar-wrapper" onClick={() => handleVote('disagree')}>
-              <div className="bar-label-top">
-                {selected === 'disagree' && '✔'} 반대
-              </div>
-              <div className="bar-background disagree-background">
-                <div 
-                  className="bar-fill disagree-bar" 
-                  style={{ width: `${voteData.disagree_percent}%` }}
-                >
-                  <span className="bar-percent-text">{voteData.disagree_percent}%</span>
-                </div>
-              </div>
+            <div className="participant-count">
+              {formatNumber(voteData.total_count)}명 참여중
             </div>
           </div>
-          <div className="participant-count">
-            {formatNumber(voteData.total_count)}명 참여중
-          </div>
+
+          {selected && (
+            <div className="bottom-actions">
+              <div className="discussion-link" onClick={handleDiscussionClick}>
+                {isParticipating ? '토론방 참여중' : '토론방 참여하기'}
+              </div>
+            </div>
+          )}
         </div>
-
-        {selected && <div className="discussion-text-outside">토론방 참여하기</div>}
 
         <div className="bill-image"></div>
         <div className="bill-content">
@@ -250,6 +309,14 @@ function DetailPage() {
         {showMyPage && (
           <MyPagePopup 
             onClose={() => setShowMyPage(false)}
+          />
+        )}
+
+        {showDiscussion && discussionId && (
+          <DiscussionPopup
+            discussionId={discussionId}
+            billName={lawData?.BILL_NAME}
+            onClose={() => setShowDiscussion(false)}
           />
         )}
       </main>

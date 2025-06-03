@@ -85,9 +85,9 @@ function ListPage() {
 
   const handlePageGroupChange = (direction) => {
     if (direction === 'prev') {
-      const newStartPage = Math.max(1, startPage - maxPageNumbers);
+      const newStartPage = Math.max(1, startPage - pageSize);
       setStartPage(newStartPage);
-      if (currentPage > newStartPage + maxPageNumbers - 1) {
+      if (currentPage > newStartPage + pageSize - 1) {
         setCurrentPage(newStartPage);
         navigate(
           `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}`
@@ -95,8 +95,8 @@ function ListPage() {
       }
     } else {
       const newStartPage = Math.min(
-        Math.ceil(totalPages / maxPageNumbers) * maxPageNumbers - maxPageNumbers + 1,
-        startPage + maxPageNumbers
+        Math.ceil(totalPages / pageSize) * pageSize - pageSize + 1,
+        startPage + pageSize
       );
       setStartPage(newStartPage);
       if (currentPage < newStartPage) {

@@ -16,7 +16,7 @@ router = APIRouter(
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     try:
         user = authenticate_user(db, form_data.username, form_data.password)
-        if not user:
+    if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="이메일 또는 비밀번호가 올바르지 않습니다.",
@@ -26,8 +26,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         access_token = create_access_token(
             data={"sub": user.email}
         )
-        
-        return {
+    
+    return {
             "access_token": access_token,
             "token_type": "bearer",
             "expires_in": ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,

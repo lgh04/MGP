@@ -31,7 +31,7 @@ function Login() {
       setUserNickname(data.user.nickname);
       sessionStorage.setItem("nickname", data.user.nickname);
       sessionStorage.setItem("token", data.access_token);
-      navigate("/");
+        navigate("/");
     } catch (err) {
       console.error("로그인 실패:", err);
       alert(err.message);

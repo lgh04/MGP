@@ -1,46 +1,130 @@
 import React, { useState, useEffect } from 'react';
 import './MyPagePopup.css';
+import DiscussionPopup from './DiscussionPopup';
 
 function MyPagePopup({ onClose }) {
-  // 추후 토론방 기능 구현 시 사용할 상태
-  const [debates] = useState([]);
+  const [activeTab, setActiveTab] = useState('discussions');
+  const [discussions, setDiscussions] = useState([]);
+  const [selectedDiscussion, setSelectedDiscussion] = useState(null);
+  const nickname = sessionStorage.getItem('nickname');
 
   useEffect(() => {
-    // 추후 토론방 목록을 가져오는 API가 구현되면 연결
-    // fetchDebates();
+    const fetchDiscussions = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/discussions/my', {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        setDiscussions(data);
+      } catch (error) {
+        console.error('토론방 목록 로드 실패:', error);
+      }
+    };
+
+    fetchDiscussions();
   }, []);
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('nickname');
+    sessionStorage.removeItem('userId');
+    window.location.reload();
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    const date = new Date(timeString);
+    const now = new Date();
+    const diff = now - date;
+
+    // 24시간 이내
+    if (diff < 24 * 60 * 60 * 1000) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    // 일주일 이내
+    if (diff < 7 * 24 * 60 * 60 * 1000) {
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      return days[date.getDay()] + '요일';
+    }
+    // 그 외
+    return date.toLocaleDateString();
+  };
+
   return (
-    <div className="mypage-popup">
-      <div className="mypage-popup-content">
-        <div className="popup-top-bar"></div>
-        <button className="close-button" onClick={onClose}>×</button>
+    <>
+      <div className="mypage-popup">
         <div className="mypage-header">
-          <img src="/main-logo.png" alt="ACT:ON" className="mypage-logo" />
-          <h1 className="mypage-title">마이페이지</h1>
+          <h2>마이페이지</h2>
+          <button className="close-button" onClick={onClose}>×</button>
         </div>
-        
+
+        <div className="mypage-tabs">
+          <button
+            className={activeTab === 'discussions' ? 'active' : ''}
+            onClick={() => setActiveTab('discussions')}
+          >
+            참여 중인 토론
+          </button>
+          <button
+            className={activeTab === 'profile' ? 'active' : ''}
+            onClick={() => setActiveTab('profile')}
+          >
+            프로필
+          </button>
+        </div>
+
         <div className="mypage-content">
-          <h2 className="debate-title">토론방 목록</h2>
-          <div className="debate-subtitle">참여중인 토론</div>
-          
-          <div className="debates-list">
-            {debates.length > 0 ? (
-              debates.map(debate => (
-                <div key={debate.id} className="debate-item">
-                  <span className="debate-name">{debate.title}</span>
-                  <span className="debate-date">{debate.created_at}</span>
+          {activeTab === 'discussions' ? (
+            <div className="discussions-list">
+              {discussions.length === 0 ? (
+                <div className="no-discussions">
+                  참여 중인 토론방이 없습니다.
                 </div>
-              ))
-            ) : (
-              <div className="no-debates">
-                아직 참여한 토론방이 없습니다
+              ) : (
+                discussions.map((discussion) => (
+                  <div
+                    key={discussion.id}
+                    className="discussion-item"
+                    onClick={() => setSelectedDiscussion(discussion)}
+                  >
+                    <div className="discussion-info">
+                      <h3>{discussion.bill_name}</h3>
+                      <p className="last-message">
+                        {discussion.last_message}
+                      </p>
+                    </div>
+                    {discussion.last_message_time && (
+                      <div className="discussion-time">
+                        {formatTime(discussion.last_message_time)}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="profile-content">
+              <div className="profile-info">
+                <p><strong>닉네임:</strong> {nickname}</p>
               </div>
-            )}
-          </div>
+              <button className="logout-button" onClick={handleLogout}>
+                로그아웃
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+
+      {selectedDiscussion && (
+        <DiscussionPopup
+          discussionId={selectedDiscussion.id}
+          billName={selectedDiscussion.bill_name}
+          onClose={() => setSelectedDiscussion(null)}
+        />
+      )}
+    </>
   );
 }
 
