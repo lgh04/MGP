@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 from . import schemas, crud
 from backend.db.database import SessionLocal, get_db
@@ -72,10 +73,23 @@ def send_email_code(data: EmailRequest):
             "code": code,
             "expires": time.time() + 180
         }
-        return {"message": "이메일로 인증번호 전송됨"}
+        return JSONResponse(
+            content={"message": "이메일로 인증번호 전송됨"},
+            headers={
+                "Access-Control-Allow-Origin": "http://localhost:3000",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        )
     except Exception as e:
         print(f"[ERROR] 이메일 전송 실패: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(e)},
+            headers={
+                "Access-Control-Allow-Origin": "http://localhost:3000",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        )
 
 # -------------------------------
 # 이메일 인증번호 확인
@@ -86,14 +100,51 @@ class VerifyRequest(BaseModel):
 
 @router.post("/verify-email-code")
 def verify_email_code(data: VerifyRequest):
-    record = code_storage.get(data.email)
-    if not record:
-        raise HTTPException(status_code=404, detail="인증 기록 없음")
-    if record["expires"] < time.time():
-        raise HTTPException(status_code=400, detail="인증번호 만료")
-    if record["code"] != data.code:
-        raise HTTPException(status_code=400, detail="인증번호 불일치")
-    return {"message": "이메일 인증 성공"}
+    try:
+        record = code_storage.get(data.email)
+        if not record:
+            return JSONResponse(
+                status_code=404,
+                content={"detail": "인증 기록 없음"},
+                headers={
+                    "Access-Control-Allow-Origin": "http://localhost:3000",
+                    "Access-Control-Allow-Credentials": "true"
+                }
+            )
+        if record["expires"] < time.time():
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "인증번호 만료"},
+                headers={
+                    "Access-Control-Allow-Origin": "http://localhost:3000",
+                    "Access-Control-Allow-Credentials": "true"
+                }
+            )
+        if record["code"] != data.code:
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "인증번호 불일치"},
+                headers={
+                    "Access-Control-Allow-Origin": "http://localhost:3000",
+                    "Access-Control-Allow-Credentials": "true"
+                }
+            )
+        return JSONResponse(
+            content={"message": "이메일 인증 성공"},
+            headers={
+                "Access-Control-Allow-Origin": "http://localhost:3000",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(e)},
+            headers={
+                "Access-Control-Allow-Origin": "http://localhost:3000",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        )
 
 @router.post("/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):

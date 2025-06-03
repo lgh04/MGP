@@ -19,19 +19,29 @@ function Login() {
       const res = await fetch("http://localhost:8000/api/login", {
         method: "POST",
         body: formData,
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        }
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || '로그인에 실패했습니다.');
+        if (res.status === 401) {
+          throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+        }
+        throw new Error('로그인에 실패했습니다.');
       }
 
       const data = await res.json();
+      
+      if (!data.access_token) {
+        throw new Error('토큰이 없습니다.');
+      }
+
       setUserNickname(data.user.nickname);
       sessionStorage.setItem("nickname", data.user.nickname);
       sessionStorage.setItem("token", data.access_token);
-        navigate("/");
+      navigate("/");
     } catch (err) {
       console.error("로그인 실패:", err);
       alert(err.message);

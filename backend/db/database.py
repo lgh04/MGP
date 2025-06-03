@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -21,10 +21,17 @@ def get_db():
     finally:
         db.close()
 
-# 데이터베이스 테이블 생성
+# 데이터베이스 테이블 생성 (테이블이 없을 때만)
 def create_tables():
     from . import models  # 모델 import
-    Base.metadata.create_all(bind=engine)
+    inspector = inspect(engine)
+    
+    # users 테이블이 없을 때만 테이블 생성
+    if not inspector.has_table("users"):
+        Base.metadata.create_all(bind=engine)
+        print("Tables created successfully")
+    else:
+        print("Tables already exist")
 
 # 테이블 생성 실행
 create_tables()

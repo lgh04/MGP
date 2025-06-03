@@ -39,7 +39,7 @@ function ListPage() {
   useEffect(() => {
     const fetchData = () => {
       fetch(
-        `http://3.107.27.34:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
+        `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
       )
         .then((res) => res.json())
         .then((data) => {

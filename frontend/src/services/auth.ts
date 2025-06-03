@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://3.107.27.34:8000/api';
+const API_URL = 'http://localhost:8000/api';
 
 export interface LoginResponse {
     access_token: string;
