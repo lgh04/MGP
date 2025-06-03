@@ -25,7 +25,7 @@ function Home() {
     queryKey: ['home-laws'],
     queryFn: async () => {
       try {
-        const response = await fetch("http://3.107.27.34:8000/api/laws", {
+        const response = await fetch("http://localhost:8000/api/laws", {
           headers: {
             'Accept': 'application/json'
           }
@@ -39,16 +39,16 @@ function Home() {
         return { 공포: [], 발의: [] };
       }
     },
-    staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 30,
-    refetchInterval: 60000,
-    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5분 동안 데이터를 신선한 상태로 유지
+    cacheTime: 1000 * 60 * 30, // 30분 동안 캐시 유지
+    refetchInterval: 60000, // 1분마다 자동 갱신
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 리페치 비활성화
   });
 
   const handleSearch = () => {
     const encodedQuery = encodeURIComponent(searchQuery.trim());
     const encodedMode = encodeURIComponent(searchMode);
-    navigate(`/list?query=${encodedQuery}&mode=${encodedMode}&sort=latest&page=1`);
+    navigate(/list?query=${encodedQuery}&mode=${encodedMode}&sort=latest&page=1);
   };
 
   return (
@@ -118,7 +118,7 @@ function Home() {
                   {laws[mode].slice(0, 8).map((law, idx) => (
                     <div key={idx} className="law-item">
                       <div 
-                        onClick={() => navigate(`/detail/${law.bill_id}`)}
+                        onClick={() => navigate(/detail/${law.bill_id})}
                         style={{ cursor: 'pointer' }}
                       >
                         {law.title}
@@ -129,7 +129,7 @@ function Home() {
                 </div>
 
                 <div className="law-more-button">
-                  <button onClick={() => navigate(`/list?query=&mode=${mode}&sort=latest&page=1`)}>＋</button>
+                  <button onClick={() => navigate(/list?query=&mode=${mode}&sort=latest&page=1)}>＋</button>
                 </div>
               </div>
             ))}
