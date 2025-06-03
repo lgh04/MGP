@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, create_engine, text
 from typing import List
-from backend.db.database import get_db
+from backend.db.database import get_db, engine
 from backend.user.auth import get_current_user
-from . import models, schemas
+from .models import Discussion, DiscussionParticipant, DiscussionMessage, UserChatRestriction
+from . import schemas
 from datetime import datetime
 from backend.db.models import User
 import httpx
@@ -49,24 +50,28 @@ async def join_discussion(
     current_user: User = Depends(get_current_user)
 ):
     # 토론방 찾기 또는 생성
-    discussion = db.query(models.Discussion).filter(
-        models.Discussion.bill_id == bill_id
+    discussion = db.query(Discussion).filter(
+        Discussion.bill_id == bill_id
     ).first()
     
     if not discussion:
-        discussion = models.Discussion(bill_id=bill_id)
+        # 새로운 토론방 생성
+        discussion = Discussion(bill_id=bill_id)
         db.add(discussion)
         db.commit()
         db.refresh(discussion)
+        
+        # 신고 테이블 생성
+        discussion.create_report_table()
     
     # 이미 참여 중인지 확인
-    existing_participant = db.query(models.DiscussionParticipant).filter(
-        models.DiscussionParticipant.discussion_id == discussion.id,
-        models.DiscussionParticipant.user_id == current_user.id
+    existing_participant = db.query(DiscussionParticipant).filter(
+        DiscussionParticipant.discussion_id == discussion.id,
+        DiscussionParticipant.user_id == current_user.id
     ).first()
     
     if not existing_participant:
-        participant = models.DiscussionParticipant(
+        participant = DiscussionParticipant(
             discussion_id=discussion.id,
             user_id=current_user.id
         )
@@ -77,8 +82,8 @@ async def join_discussion(
         "id": discussion.id,
         "bill_id": discussion.bill_id,
         "created_at": discussion.created_at,
-        "participant_count": db.query(models.DiscussionParticipant).filter(
-            models.DiscussionParticipant.discussion_id == discussion.id
+        "participant_count": db.query(DiscussionParticipant).filter(
+            DiscussionParticipant.discussion_id == discussion.id
         ).count(),
         "is_participating": True
     }
@@ -89,16 +94,16 @@ async def leave_discussion(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    discussion = db.query(models.Discussion).filter(
-        models.Discussion.bill_id == bill_id
+    discussion = db.query(Discussion).filter(
+        Discussion.bill_id == bill_id
     ).first()
     
     if not discussion:
         raise HTTPException(status_code=404, detail="토론방을 찾을 수 없습니다")
     
-    participant = db.query(models.DiscussionParticipant).filter(
-        models.DiscussionParticipant.discussion_id == discussion.id,
-        models.DiscussionParticipant.user_id == current_user.id
+    participant = db.query(DiscussionParticipant).filter(
+        DiscussionParticipant.discussion_id == discussion.id,
+        DiscussionParticipant.user_id == current_user.id
     ).first()
     
     if not participant:
@@ -114,16 +119,16 @@ async def get_my_discussions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    participants = db.query(models.DiscussionParticipant).filter(
-        models.DiscussionParticipant.user_id == current_user.id
+    participants = db.query(DiscussionParticipant).filter(
+        DiscussionParticipant.user_id == current_user.id
     ).all()
     
     discussions = []
     for participant in participants:
         discussion = participant.discussion
-        last_message = db.query(models.DiscussionMessage).filter(
-            models.DiscussionMessage.discussion_id == discussion.id
-        ).order_by(desc(models.DiscussionMessage.created_at)).first()
+        last_message = db.query(DiscussionMessage).filter(
+            DiscussionMessage.discussion_id == discussion.id
+        ).order_by(desc(DiscussionMessage.created_at)).first()
         
         # 법안 제목 가져오기
         bill_name = await get_bill_name(discussion.bill_id)
@@ -132,8 +137,8 @@ async def get_my_discussions(
             "id": discussion.id,
             "bill_id": discussion.bill_id,
             "bill_name": bill_name,
-            "participant_count": db.query(models.DiscussionParticipant).filter(
-                models.DiscussionParticipant.discussion_id == discussion.id
+            "participant_count": db.query(DiscussionParticipant).filter(
+                DiscussionParticipant.discussion_id == discussion.id
             ).count(),
             "last_message": last_message.content if last_message else None,
             "last_message_time": last_message.created_at if last_message else None
@@ -148,17 +153,17 @@ async def get_messages(
     current_user: User = Depends(get_current_user)
 ):
     # 참여 중인지 확인
-    participant = db.query(models.DiscussionParticipant).filter(
-        models.DiscussionParticipant.discussion_id == discussion_id,
-        models.DiscussionParticipant.user_id == current_user.id
+    participant = db.query(DiscussionParticipant).filter(
+        DiscussionParticipant.discussion_id == discussion_id,
+        DiscussionParticipant.user_id == current_user.id
     ).first()
     
     if not participant:
         raise HTTPException(status_code=403, detail="참여하지 않은 토론방입니다")
     
-    messages = db.query(models.DiscussionMessage).filter(
-        models.DiscussionMessage.discussion_id == discussion_id
-    ).order_by(models.DiscussionMessage.created_at).all()
+    messages = db.query(DiscussionMessage).filter(
+        DiscussionMessage.discussion_id == discussion_id
+    ).order_by(DiscussionMessage.created_at).all()
     
     return [{
         "id": msg.id,
@@ -177,15 +182,22 @@ async def create_message(
     current_user: User = Depends(get_current_user)
 ):
     # 참여 중인지 확인
-    participant = db.query(models.DiscussionParticipant).filter(
-        models.DiscussionParticipant.discussion_id == discussion_id,
-        models.DiscussionParticipant.user_id == current_user.id
+    participant = db.query(DiscussionParticipant).filter(
+        DiscussionParticipant.discussion_id == discussion_id,
+        DiscussionParticipant.user_id == current_user.id
     ).first()
     
     if not participant:
         raise HTTPException(status_code=403, detail="참여하지 않은 토론방입니다")
     
-    db_message = models.DiscussionMessage(
+    # 채팅 제한 상태 확인
+    if UserChatRestriction.is_restricted(db, current_user.id, discussion_id):
+        raise HTTPException(
+            status_code=403,
+            detail="신고로 인해 24시간 동안 채팅이 제한되었습니다"
+        )
+    
+    db_message = DiscussionMessage(
         discussion_id=discussion_id,
         user_id=current_user.id,
         content=message.content
@@ -220,12 +232,17 @@ async def websocket_endpoint(
             return
 
         # 참여 중인지 확인
-        participant = db.query(models.DiscussionParticipant).filter(
-            models.DiscussionParticipant.discussion_id == discussion_id,
-            models.DiscussionParticipant.user_id == current_user.id
+        participant = db.query(DiscussionParticipant).filter(
+            DiscussionParticipant.discussion_id == discussion_id,
+            DiscussionParticipant.user_id == current_user.id
         ).first()
         
         if not participant:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+        
+        # 채팅 제한 상태 확인
+        if UserChatRestriction.is_restricted(db, current_user.id, discussion_id):
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
         
@@ -238,8 +255,13 @@ async def websocket_endpoint(
             while True:
                 data = await websocket.receive_text()
                 
+                # 채팅 제한 상태 재확인
+                if UserChatRestriction.is_restricted(db, current_user.id, discussion_id):
+                    await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                    return
+                
                 # 메시지 저장
-                message = models.DiscussionMessage(
+                message = DiscussionMessage(
                     discussion_id=discussion_id,
                     user_id=current_user.id,
                     content=data
@@ -277,4 +299,101 @@ async def websocket_endpoint(
             connected_clients[discussion_id].remove(websocket)
             if not connected_clients[discussion_id]:
                 del connected_clients[discussion_id]
-        await websocket.close(code=status.WS_1011_INTERNAL_ERROR) 
+        await websocket.close(code=status.WS_1011_INTERNAL_ERROR)
+
+@router.post("/{discussion_id}/report", response_model=schemas.Report)
+async def report_user(
+    discussion_id: int,
+    report: schemas.ReportCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. 토론방이 존재하는지 확인
+    discussion = db.query(Discussion).filter(Discussion.id == discussion_id).first()
+    if not discussion:
+        raise HTTPException(status_code=404, detail="토론방을 찾을 수 없습니다")
+
+    # 2. 신고하려는 메시지가 해당 토론방의 메시지인지 확인
+    message = db.query(DiscussionMessage).filter(
+        DiscussionMessage.id == report.message_id,
+        DiscussionMessage.discussion_id == discussion_id
+    ).first()
+    if not message:
+        raise HTTPException(status_code=404, detail="메시지를 찾을 수 없습니다")
+
+    # 3. 자기 자신을 신고하는지 확인
+    if current_user.id == report.reported_user_id:
+        raise HTTPException(status_code=400, detail="자기 자신을 신고할 수 없습니다")
+
+    # 4. 이미 신고했는지 확인
+    table_name = f"discussion_{discussion_id}_reports"
+    check_query = text(f"""
+        SELECT id FROM {table_name}
+        WHERE reporter_id = :reporter_id AND reported_user_id = :reported_user_id
+    """)
+    
+    result = db.execute(
+        check_query,
+        {
+            "reporter_id": current_user.id,
+            "reported_user_id": report.reported_user_id
+        }
+    ).first()
+
+    if result:
+        raise HTTPException(status_code=400, detail="이미 신고한 사용자입니다")
+
+    # 5. 신고 정보 저장
+    insert_query = text(f"""
+        INSERT INTO {table_name} (reporter_id, reported_user_id, message_id, created_at)
+        VALUES (:reporter_id, :reported_user_id, :message_id, :created_at)
+        RETURNING id, reporter_id, reported_user_id, message_id, created_at
+    """)
+
+    result = db.execute(
+        insert_query,
+        {
+            "reporter_id": current_user.id,
+            "reported_user_id": report.reported_user_id,
+            "message_id": report.message_id,
+            "created_at": datetime.now()
+        }
+    ).first()
+
+    db.commit()
+
+    # 6. 신고 횟수 확인 및 채팅 제한 적용
+    discussion.check_and_restrict_user(db, report.reported_user_id)
+
+    return {
+        "id": result.id,
+        "reporter_id": result.reporter_id,
+        "reported_user_id": result.reported_user_id,
+        "message_id": result.message_id,
+        "created_at": result.created_at
+    }
+
+@router.get("/users/{user_id}/report-status/{discussion_id}")
+async def get_user_report_status(
+    user_id: int,
+    discussion_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 채팅 제한 상태 확인
+    restriction = db.query(UserChatRestriction).filter(
+        UserChatRestriction.user_id == user_id,
+        UserChatRestriction.discussion_id == discussion_id,
+        UserChatRestriction.restricted_until > datetime.now()
+    ).first()
+
+    if restriction:
+        return {
+            "is_restricted": True,
+            "restriction_end": restriction.restricted_until
+        }
+    
+    return {
+        "is_restricted": False,
+        "restriction_end": None
+    } 

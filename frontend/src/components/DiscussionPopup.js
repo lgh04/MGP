@@ -70,11 +70,17 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
 
   const checkUserRestriction = async (userId, discussionId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/users/${userId}/report-status/${discussionId}`, {
+      const response = await fetch(`http://localhost:8000/api/discussions/users/${userId}/report-status/${discussionId}`, {
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       });
+      
+      if (!response.ok) {
+        console.error('제한 상태 확인 실패:', await response.text());
+        return null;
+      }
+
       const data = await response.json();
       setUserRestrictions(prev => ({
         ...prev,
@@ -118,11 +124,21 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
 
   const handleReportMessage = async (messageId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/messages/${messageId}/report`, {
+      const message = messages.find(m => m.id === messageId);
+      if (!message) {
+        throw new Error('메시지를 찾을 수 없습니다.');
+      }
+
+      const response = await fetch(`http://localhost:8000/api/discussions/${discussionId}/report`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        }
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reported_user_id: message.user_id,
+          message_id: messageId
+        })
       });
 
       if (!response.ok) {
@@ -131,8 +147,8 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
       }
 
       alert('신고가 접수되었습니다.');
+      
       // 신고된 사용자의 상태 업데이트
-      const message = messages.find(m => m.id === messageId);
       if (message) {
         await checkUserRestriction(message.user_id, discussionId);
       }

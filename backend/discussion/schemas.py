@@ -53,4 +53,18 @@ class MyDiscussion(BaseModel):
     last_message_time: Optional[datetime]
 
     class Config:
+        from_attributes = True
+
+class ReportCreate(BaseModel):
+    reported_user_id: int
+    message_id: int
+
+class Report(BaseModel):
+    id: int
+    reporter_id: int
+    reported_user_id: int
+    message_id: int
+    created_at: datetime
+
+    class Config:
         from_attributes = True 
