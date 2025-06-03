@@ -20,12 +20,17 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         # 사용자 인증
         user = authenticate_user(db, form_data.username, form_data.password)
         if not user:
+<<<<<<< Updated upstream
             print("Authentication failed")
             return JSONResponse(
+=======
+            raise HTTPException(
+>>>>>>> Stashed changes
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"detail": "이메일 또는 비밀번호가 올바르지 않습니다."},
                 headers={"WWW-Authenticate": "Bearer"}
             )
+<<<<<<< Updated upstream
         
         print(f"Authentication successful, creating access token for user: {user.email}")
         # 액세스 토큰 생성
@@ -35,6 +40,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         
         # 응답 반환
         response_data = {
+=======
+        access_token = create_access_token(
+            data={"sub": user.email}
+        )
+        return {
+>>>>>>> Stashed changes
             "access_token": access_token,
             "token_type": "bearer",
             "expires_in": ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
