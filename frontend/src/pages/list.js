@@ -37,7 +37,7 @@ function ListPage() {
   useEffect(() => {
     const fetchData = () => {
       fetch(
-        http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}
+        `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
       )
         .then((res) => res.json())
         .then((data) => {
@@ -58,7 +58,7 @@ function ListPage() {
     setStartPage(1);
     setSearchText(query);
     navigate(
-      /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=1
+      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=1`
     );
   };
 
@@ -67,7 +67,7 @@ function ListPage() {
     setCurrentPage(1);
     setStartPage(1);
     navigate(
-      /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${newFilter}&page=1
+      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${newFilter}&page=1`
     );
   };
 
@@ -79,7 +79,7 @@ function ListPage() {
       setStartPage(Math.max(1, newPage - maxPageNumbers + 1));
     }
     navigate(
-      /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newPage}
+      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newPage}`
     );
   };
 
@@ -90,7 +90,7 @@ function ListPage() {
       if (currentPage > newStartPage + pageSize - 1) {
         setCurrentPage(newStartPage);
         navigate(
-          /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}
+          `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}`
         );
       }
     } else {
@@ -102,7 +102,7 @@ function ListPage() {
       if (currentPage < newStartPage) {
         setCurrentPage(newStartPage);
         navigate(
-          /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}
+          `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}`
         );
       }
     }
@@ -238,7 +238,7 @@ function ListPage() {
         {items.map((item, index) => (
           <div key={index} className="bill-box">
             <div
-              onClick={() => navigate(/detail/${item.bill_id})}
+              onClick={() => navigate(`/detail/${item.bill_id}`)}
               style={{ cursor: "pointer" }}
             >
               <h3>{item.title}</h3>

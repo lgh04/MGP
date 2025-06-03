@@ -41,14 +41,10 @@ function DetailPage() {
     
     const fetchLawDetail = async () => {
       try {
-<<<<<<< HEAD
         setIsLoading(true);
         setError(null);
         
         const response = await fetch(`http://localhost:8000/api/law/${billId}`);
-=======
-        const response = await fetch(http://localhost:8000/api/law/${billId});
->>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
         const data = await response.json();
         
         if (!response.ok) {
@@ -77,14 +73,10 @@ function DetailPage() {
     const fetchVoteStatus = async () => {
       try {
         const token = sessionStorage.getItem('token');
-<<<<<<< HEAD
         const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
-=======
-        const response = await fetch(http://localhost:8000/api/vote/${billId}, {
->>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
           credentials: 'include',
           headers: {
-            'Authorization': Bearer ${token}
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -106,14 +98,10 @@ function DetailPage() {
 
       try {
         const token = sessionStorage.getItem('token');
-<<<<<<< HEAD
         const response = await fetch(`http://localhost:8000/api/vote/${billId}/user`, {
-=======
-        const response = await fetch(http://localhost:8000/api/vote/${billId}/user, {
->>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
           credentials: 'include',
           headers: {
-            'Authorization': Bearer ${token}
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -138,14 +126,10 @@ function DetailPage() {
       if (!nickname) return;
 
       try {
-<<<<<<< HEAD
         const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
-=======
-        const response = await fetch(http://localhost:8000/api/discussions/${billId}/join, {
->>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
           method: 'GET',
           headers: {
-            'Authorization': Bearer ${sessionStorage.getItem('token')}
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
         });
         const data = await response.json();
@@ -175,7 +159,6 @@ function DetailPage() {
 
     try {
       const token = sessionStorage.getItem('token');
-<<<<<<< HEAD
       if (!token) {
         alert("로그인이 필요합니다.");
         navigate("/login");
@@ -183,13 +166,10 @@ function DetailPage() {
       }
 
       const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
-=======
-      const response = await fetch(http://localhost:8000/api/vote/${billId}, {
->>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': Bearer ${token}
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({ vote_type: voteType })
@@ -217,7 +197,6 @@ function DetailPage() {
     }
 
     try {
-<<<<<<< HEAD
       const token = sessionStorage.getItem('token');
       if (!token) {
         alert("로그인이 필요합니다.");
@@ -226,12 +205,9 @@ function DetailPage() {
       }
 
       const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
-=======
-      const response = await fetch(http://localhost:8000/api/discussions/${billId}/join, {
->>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
         method: 'POST',
         headers: {
-          'Authorization': Bearer ${sessionStorage.getItem('token')}
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       });
       
@@ -286,22 +262,12 @@ function DetailPage() {
       </header>
 
       <main className="detail-container">
-<<<<<<< HEAD
-        {isLoading ? (
-          <div className="loading">법안 정보를 불러오는 중...</div>
-        ) : error ? (
-          <div className="error">
-            <p>{error}</p>
-            <button onClick={() => navigate('/')}>홈으로 돌아가기</button>
-=======
         <h1 className="bill-title">{lawData?.BILL_NAME || '법안 제목 불러오는 중...'}</h1>
 
         <div className="vote-section">
           {selected && (
-            <div className="vote-actions">
-              <div className="comment-toggle" onClick={() => setShowComments(true)}>
-                댓글보기
-              </div>
+            <div className="comment-toggle" onClick={() => setShowComments(true)}>
+              댓글보기
             </div>
           )}
 
@@ -314,7 +280,7 @@ function DetailPage() {
                 <div className="bar-background">
                   <div 
                     className="bar-fill agree-bar" 
-                    style={{ width: ${voteData.agree_percent}% }}
+                    style={{ width: `${voteData.agree_percent}%` }}
                   >
                     <span className="bar-percent-text">{voteData.agree_percent}%</span>
                   </div>
@@ -330,7 +296,7 @@ function DetailPage() {
                 <div className="bar-background disagree-background">
                   <div 
                     className="bar-fill disagree-bar" 
-                    style={{ width: ${voteData.disagree_percent}% }}
+                    style={{ width: `${voteData.disagree_percent}%` }}
                   >
                     <span className="bar-percent-text">{voteData.disagree_percent}%</span>
                   </div>
@@ -340,113 +306,55 @@ function DetailPage() {
             <div className="participant-count">
               {formatNumber(voteData.total_count)}명 참여중
             </div>
->>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
           </div>
-        ) : lawData ? (
-          <>
-            <h1 className="bill-title">{lawData.BILL_NAME || '제목 없음'}</h1>
-
-            <div className="vote-section">
-              {selected && (
-                <div className="vote-actions">
-                  <div className="comment-toggle" onClick={() => setShowComments(true)}>
-                    댓글보기
-                  </div>
-                </div>
-              )}
-
-              <div className="vote-box">
-                <div className="vote-bars">
-                  <div className="bar-wrapper" onClick={() => handleVote('agree')}>
-                    <div className="bar-label-top">
-                      찬성 {selected === 'agree' && '✔'}
-                    </div>
-                    <div className="bar-background">
-                      <div 
-                        className="bar-fill agree-bar" 
-                        style={{ width: `${voteData.agree_percent}%` }}
-                      >
-                        <span className="bar-percent-text">{voteData.agree_percent}%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="vs-text">VS</div>
-
-                  <div className="bar-wrapper" onClick={() => handleVote('disagree')}>
-                    <div className="bar-label-top">
-                      {selected === 'disagree' && '✔'} 반대
-                    </div>
-                    <div className="bar-background disagree-background">
-                      <div 
-                        className="bar-fill disagree-bar" 
-                        style={{ width: `${voteData.disagree_percent}%` }}
-                      >
-                        <span className="bar-percent-text">{voteData.disagree_percent}%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="participant-count">
-                  {formatNumber(voteData.total_count)}명 참여중
-                </div>
-              </div>
-
-              {selected && (
-                <div className="bottom-actions">
-                  <div className="discussion-link" onClick={handleDiscussionClick}>
-                    {isParticipating ? '토론방 참여중' : '토론방 참여하기'}
-                  </div>
-                </div>
-              )}
+          
+          {selected && (
+            <div className="discussion-link" onClick={handleDiscussionClick}>
+              {isParticipating ? '토론방 참여중' : '토론방 참여하기'}
             </div>
+          )}
+        </div>
 
-            <div className="bill-image"></div>
-            <div className="bill-content">
-              <p><strong>법안 ID:</strong> {lawData.BILL_ID}</p>
-              <p><strong>법안번호:</strong> {lawData.BILL_NO}</p>
-              <p><strong>대수:</strong> {lawData.AGE}</p>
-              <p><strong>법안명:</strong> {lawData.BILL_NAME}</p>
-              <p><strong>제안자:</strong> {lawData.PROPOSER}</p>
-              <p><strong>제안자 구분:</strong> {lawData.PROPOSER_KIND}</p>
-              <p><strong>제안일:</strong> {lawData.PROPOSE_DT}</p>
-              <p><strong>소관위원회 ID:</strong> {lawData.CURR_COMMITTEE_ID}</p>
-              <p><strong>소관위:</strong> {lawData.CURR_COMMITTEE}</p>
-              <p><strong>소관위 회부일:</strong> {lawData.COMMITTEE_DT}</p>
-              <p><strong>위원회 처리일:</strong> {lawData.COMMITTEE_PROC_DT}</p>
-              <p><strong>법안 링크:</strong> <a href={lawData.LINK_URL} target="_blank" rel="noreferrer">{lawData.LINK_URL}</a></p>
-              <p><strong>대표 발의자:</strong> {lawData.RST_PROPOSER}</p>
-              <p><strong>법사위 처리결과:</strong> {lawData.LAW_PROC_RESULT_CD}</p>
-              <p><strong>법사위 처리일:</strong> {lawData.LAW_PROC_DT}</p>
-              <p><strong>법사위 상정일:</strong> {lawData.LAW_PRESENT_DT}</p>
-              <p><strong>법사위 회부일:</strong> {lawData.LAW_SUBMIT_DT}</p>
-              <p><strong>소관위 처리결과:</strong> {lawData.CMT_PROC_RESULT_CD}</p>
-              <p><strong>소관위 처리일:</strong> {lawData.CMT_PROC_DT}</p>
-              <p><strong>소관위 상정일:</strong> {lawData.CMT_PRESENT_DT}</p>
-              <p><strong>대표발의자 코드:</strong> {lawData.RST_MONA_CD}</p>
-              <p><strong>본회의 심의결과:</strong> {lawData.PROC_RESULT_CD}</p>
-              <p><strong>의결일:</strong> {lawData.PROC_DT}</p>
-            </div>
-          </>
-        ) : (
-          <div className="error">법안 정보를 찾을 수 없습니다.</div>
-        )}
+        <div className="bill-image"></div>
+        <div className="bill-content">
+          <p><strong>법안 ID:</strong> {lawData?.BILL_ID}</p>
+          <p><strong>법안번호:</strong> {lawData?.BILL_NO}</p>
+          <p><strong>대수:</strong> {lawData?.AGE}</p>
+          <p><strong>법안명:</strong> {lawData?.BILL_NAME}</p>
+          <p><strong>제안자:</strong> {lawData?.PROPOSER}</p>
+          <p><strong>제안자 구분:</strong> {lawData?.PROPOSER_KIND}</p>
+          <p><strong>제안일:</strong> {lawData?.PROPOSE_DT}</p>
+          <p><strong>소관위원회 ID:</strong> {lawData?.CURR_COMMITTEE_ID}</p>
+          <p><strong>소관위:</strong> {lawData?.CURR_COMMITTEE}</p>
+          <p><strong>소관위 회부일:</strong> {lawData?.COMMITTEE_DT}</p>
+          <p><strong>위원회 처리일:</strong> {lawData?.COMMITTEE_PROC_DT}</p>
+          <p><strong>법안 링크:</strong> <a href={lawData?.LINK_URL} target="_blank" rel="noreferrer">{lawData?.LINK_URL}</a></p>
+          <p><strong>대표 발의자:</strong> {lawData?.RST_PROPOSER}</p>
+          <p><strong>법사위 처리결과:</strong> {lawData?.LAW_PROC_RESULT_CD}</p>
+          <p><strong>법사위 처리일:</strong> {lawData?.LAW_PROC_DT}</p>
+          <p><strong>법사위 상정일:</strong> {lawData?.LAW_PRESENT_DT}</p>
+          <p><strong>법사위 회부일:</strong> {lawData?.LAW_SUBMIT_DT}</p>
+          <p><strong>소관위 처리결과:</strong> {lawData?.CMT_PROC_RESULT_CD}</p>
+          <p><strong>소관위 처리일:</strong> {lawData?.CMT_PROC_DT}</p>
+          <p><strong>소관위 상정일:</strong> {lawData?.CMT_PRESENT_DT}</p>
+          <p><strong>대표발의자 코드:</strong> {lawData?.RST_MONA_CD}</p>
+          <p><strong>본회의 심의결과:</strong> {lawData?.PROC_RESULT_CD}</p>
+          <p><strong>의결일:</strong> {lawData?.PROC_DT}</p>
+        </div>
       </main>
 
       {showComments && (
-        <CommentPopup 
-          onClose={() => setShowComments(false)} 
+        <CommentPopup
+          onClose={() => setShowComments(false)}
           billId={billId}
         />
       )}
 
       {showMyPage && (
-        <MyPagePopup 
-          onClose={() => setShowMyPage(false)}
-        />
+        <MyPagePopup onClose={() => setShowMyPage(false)} />
       )}
 
-      {showDiscussion && discussionId && (
+      {showDiscussion && (
         <DiscussionPopup
           discussionId={discussionId}
           billName={lawData?.BILL_NAME}

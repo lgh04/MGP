@@ -13,7 +13,7 @@ function MyPagePopup({ onClose }) {
       try {
         const response = await fetch('http://localhost:8000/api/discussions/my', {
           headers: {
-            'Authorization': Bearer ${sessionStorage.getItem('token')}
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
         });
         const data = await response.json();

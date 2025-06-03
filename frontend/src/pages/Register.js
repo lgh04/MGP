@@ -48,7 +48,7 @@ function Register() {
       const timer = setTimeout(async () => {
         if (value.trim().length < 2) return;
         try {
-          const res = await fetch(http://localhost:8000/api/check-nickname?nickname=${value});
+          const res = await fetch(`http://localhost:8000/api/check-nickname?nickname=${value}`);
           const data = await res.json();
           setNicknameError(!data.available);
         } catch (err) {

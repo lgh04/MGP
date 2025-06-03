@@ -65,15 +65,29 @@
   padding-top: 100px;
 }
 
+.detail-page h1 {
+  font-size: 0.75rem;
+  margin: 5px 0;
+  padding-top: 0;
+  margin-top: 2px;
+  text-align: center;
+  color: #555;
+  font-weight: 400;
+}
+
 .bill-title {
-  font-size: 70px;
-  font-family: 'Jacques Francois', serif;
-  color: #5d5e5e;
-  margin-bottom: 40px;
+  font-size: 56px !important;
+  margin: 10px 0 40px 0 !important;
+  padding-top: 0 !important;
+  text-align: left !important;
+  color: #333;
+  font-weight: 700 !important;
+  padding-left: 20px !important;
 }
 
 .vote-section {
   margin-bottom: 40px;
+  padding-top: 15px;
   position: relative;
 }
 
@@ -88,7 +102,7 @@
 
 .vote-actions {
   position: absolute;
-  top: -30px;
+  top: -45px;
   left: 20px;
   z-index: 1;
 }
@@ -100,15 +114,12 @@
   cursor: pointer;
   color: #0056b3;
   transition: all 0.2s ease;
+  margin-bottom: 25px;
+  display: block;
 }
 
 .comment-toggle:hover {
   opacity: 0.8;
-}
-
-.bottom-actions {
-  margin-top: 10px;
-  padding-left: 20px;
 }
 
 .discussion-link {
@@ -124,9 +135,9 @@
   opacity: 0.8;
 }
 
-/* 토론방 참여중일 때의 스타일 */
-.discussion-link:not(:hover) {
-  color: #0056b3;
+.bottom-actions {
+  margin-top: 10px;
+  padding-left: 20px;
 }
 
 .vote-bars {
