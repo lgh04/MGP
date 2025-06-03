@@ -67,3 +67,9 @@ async def get_law(bill_id: str):
             status_code=500,
             content={"error": "내부 서버 오류가 발생했습니다.", "detail": str(e)}
         )
+
+
+@app.get("/")
+def read_root():
+    return {"message": "✅ FastAPI 서버가 정상 작동 중입니다!"}
+
