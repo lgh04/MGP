@@ -19,7 +19,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
     // 기존 메시지 로드
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/discussions/${discussionId}/messages`, {
+        const response = await fetch(`http://3.107.27.34:8000/api/discussions/${discussionId}/messages`, {
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
@@ -35,7 +35,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
 
     // WebSocket 연결
     const token = sessionStorage.getItem('token');
-    const wsConnection = new WebSocket(`ws://localhost:8000/api/discussions/${discussionId}/ws?token=${token}`);
+    const wsConnection = new WebSocket(`ws://3.107.27.34:8000/api/discussions/${discussionId}/ws?token=${token}`);
 
     wsConnection.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -107,4 +107,4 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
   );
 }
 
-export default DiscussionPopup; 
+export default DiscussionPopup;
