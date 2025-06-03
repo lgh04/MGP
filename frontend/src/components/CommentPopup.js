@@ -1,5 +1,5 @@
 // src/components/CommentPopup.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './CommentPopup.css';
 
 function CommentPopup({ onClose, billId }) {
@@ -7,15 +7,7 @@ function CommentPopup({ onClose, billId }) {
   const [newComment, setNewComment] = useState('');
   const [nickname, setNickname] = useState(null);
 
-  useEffect(() => {
-    const storedNickname = sessionStorage.getItem("nickname");
-    if (storedNickname) {
-      setNickname(storedNickname);
-    }
-    fetchComments();
-  }, [billId]);
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const token = sessionStorage.getItem('token');
       const response = await fetch(`http://localhost:8000/api/comments/${billId}`, {
@@ -30,7 +22,15 @@ function CommentPopup({ onClose, billId }) {
     } catch (err) {
       console.error("댓글을 불러오는데 실패했습니다:", err);
     }
-  };
+  }, [billId]);
+
+  useEffect(() => {
+    const storedNickname = sessionStorage.getItem("nickname");
+    if (storedNickname) {
+      setNickname(storedNickname);
+    }
+    fetchComments();
+  }, [fetchComments]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

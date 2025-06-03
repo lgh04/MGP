@@ -27,10 +27,12 @@ function ListPage() {
   const [mode, setMode] = useState(initialMode);
   const [filter, setFilter] = useState(initialSort);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const [startPage, setStartPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [items, setItems] = useState([]);
+
+  const [startPage, setStartPage] = useState(1);
   const pageSize = 10;
+  const maxPageNumbers = 10; // 한 번에 보여줄 페이지 번호 개수
 
   useEffect(() => {
     const fetchData = () => {
@@ -71,30 +73,73 @@ function ListPage() {
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
+    if (newPage < startPage) {
+      setStartPage(Math.max(1, newPage - Math.floor(maxPageNumbers / 2)));
+    } else if (newPage >= startPage + maxPageNumbers) {
+      setStartPage(Math.max(1, newPage - maxPageNumbers + 1));
+    }
     navigate(
       `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newPage}`
     );
   };
 
+  const handlePageGroupChange = (direction) => {
+    if (direction === 'prev') {
+      const newStartPage = Math.max(1, startPage - maxPageNumbers);
+      setStartPage(newStartPage);
+      if (currentPage > newStartPage + maxPageNumbers - 1) {
+        setCurrentPage(newStartPage);
+        navigate(
+          `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}`
+        );
+      }
+    } else {
+      const newStartPage = Math.min(
+        Math.ceil(totalPages / maxPageNumbers) * maxPageNumbers - maxPageNumbers + 1,
+        startPage + maxPageNumbers
+      );
+      setStartPage(newStartPage);
+      if (currentPage < newStartPage) {
+        setCurrentPage(newStartPage);
+        navigate(
+          `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}`
+        );
+      }
+    }
+  };
+
   const renderPagination = () => {
     const pages = [];
-    const maxButtons = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-    let end = Math.min(totalPages, start + maxButtons - 1);
+    const endPage = Math.min(startPage + maxPageNumbers - 1, totalPages);
 
-    if (end - start + 1 < maxButtons) {
-      start = Math.max(1, end - maxButtons + 1);
-    }
-
-    if (currentPage > 1) {
+    // 이전 10페이지로 이동
+    if (startPage > 1) {
       pages.push(
-        <button key="prev" onClick={() => handlePageChange(currentPage - 1)}>
-          이전
+        <button 
+          key="first" 
+          onClick={() => handlePageGroupChange('prev')}
+          className="page-arrow"
+        >
+          ≪
         </button>
       );
     }
 
-    for (let i = start; i <= end; i++) {
+    // 이전 페이지로 이동
+    if (currentPage > 1) {
+      pages.push(
+        <button 
+          key="prev" 
+          onClick={() => handlePageChange(currentPage - 1)}
+          className="page-arrow"
+        >
+          ＜
+        </button>
+      );
+    }
+
+    // 페이지 번호
+    for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <button
           key={i}
@@ -106,10 +151,28 @@ function ListPage() {
       );
     }
 
+    // 다음 페이지로 이동
     if (currentPage < totalPages) {
       pages.push(
-        <button key="next" onClick={() => handlePageChange(currentPage + 1)}>
-          다음
+        <button 
+          key="next" 
+          onClick={() => handlePageChange(currentPage + 1)}
+          className="page-arrow"
+        >
+          ＞
+        </button>
+      );
+    }
+
+    // 다음 10페이지로 이동
+    if (endPage < totalPages) {
+      pages.push(
+        <button 
+          key="last" 
+          onClick={() => handlePageGroupChange('next')}
+          className="page-arrow"
+        >
+          ≫
         </button>
       );
     }
