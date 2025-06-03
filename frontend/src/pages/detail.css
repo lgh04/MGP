@@ -309,3 +309,23 @@
 .discussion-button.participating:hover {
   background-color: #218838;
 }
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #ff4444;
+  text-align: center;
+  padding: 20px;
+}
