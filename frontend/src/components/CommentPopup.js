@@ -1,3 +1,4 @@
+// src/components/CommentPopup.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './CommentPopup.css';
 
@@ -13,6 +14,7 @@ function CommentPopup({ onClose, billId }) {
       setIsLoading(true);
       setError(null);
       const token = sessionStorage.getItem('token');
+<<<<<<< HEAD
       
       if (!token) {
         setError("로그인이 필요합니다.");
@@ -20,8 +22,11 @@ function CommentPopup({ onClose, billId }) {
       }
 
       const response = await fetch(`http://localhost:8000/api/comments/${billId}`, {
+=======
+      const response = await fetch(http://localhost:8000/api/comments/${billId}, {
+>>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': Bearer ${token}
         }
       });
       
@@ -60,6 +65,7 @@ function CommentPopup({ onClose, billId }) {
       setIsLoading(true);
       setError(null);
       const token = sessionStorage.getItem('token');
+<<<<<<< HEAD
       
       if (!token) {
         setError("로그인이 필요합니다.");
@@ -67,10 +73,13 @@ function CommentPopup({ onClose, billId }) {
       }
 
       const response = await fetch(`http://localhost:8000/api/comments/${billId}`, {
+=======
+      const response = await fetch(http://localhost:8000/api/comments/${billId}, {
+>>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': Bearer ${token}
         },
         body: JSON.stringify({ content: newComment })
       });
@@ -100,6 +109,7 @@ function CommentPopup({ onClose, billId }) {
       setIsLoading(true);
       setError(null);
       const token = sessionStorage.getItem('token');
+<<<<<<< HEAD
       
       if (!token) {
         setError("로그인이 필요합니다.");
@@ -107,9 +117,12 @@ function CommentPopup({ onClose, billId }) {
       }
 
       const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+=======
+      const response = await fetch(http://localhost:8000/api/comments/${commentId}, {
+>>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': Bearer ${token}
         }
       });
 
@@ -197,4 +210,3 @@ function CommentPopup({ onClose, billId }) {
 }
 
 export default CommentPopup;
-

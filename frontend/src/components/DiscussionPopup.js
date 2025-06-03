@@ -19,9 +19,13 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
     // 기존 메시지 로드
     const fetchMessages = async () => {
       try {
+<<<<<<< HEAD
         const response = await fetch(`http://localhost:8000/api/discussions/${discussionId}/messages`, {
+=======
+        const response = await fetch(http://localhost:8000/api/discussions/${discussionId}/messages, {
+>>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
           headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+            'Authorization': Bearer ${sessionStorage.getItem('token')}
           }
         });
         const data = await response.json();
@@ -35,7 +39,11 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
 
     // WebSocket 연결
     const token = sessionStorage.getItem('token');
+<<<<<<< HEAD
     const wsConnection = new WebSocket(`ws://localhost:8000/api/discussions/${discussionId}/ws?token=${token}`);
+=======
+    const wsConnection = new WebSocket(ws://localhost:8000/api/discussions/${discussionId}/ws?token=${token});
+>>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
 
     wsConnection.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -80,7 +88,11 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
         {messages.map((message) => (
           <div
             key={message.id}
+<<<<<<< HEAD
             className={`message ${message.user_nickname === sessionStorage.getItem('nickname') ? 'my-message' : 'other-message'}`}
+=======
+            className={message ${message.user_id === parseInt(sessionStorage.getItem('userId')) ? 'my-message' : 'other-message'}}
+>>>>>>> 939de05043079f9c57f5e56ef397ef722d1589d9
           >
             {message.user_nickname !== sessionStorage.getItem('nickname') && (
               <div className="message-nickname">{message.user_nickname}</div>

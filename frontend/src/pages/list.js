@@ -1,5 +1,3 @@
-// src/pages/list.js
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./list.css";
@@ -34,12 +32,12 @@ function ListPage() {
 
   const [startPage, setStartPage] = useState(1);
   const pageSize = 10;
-  const maxPageNumbers = 10;
+  const maxPageNumbers = 10; // 한 번에 보여줄 페이지 번호 개수
 
   useEffect(() => {
     const fetchData = () => {
       fetch(
-        `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
+        http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}
       )
         .then((res) => res.json())
         .then((data) => {
@@ -60,7 +58,7 @@ function ListPage() {
     setStartPage(1);
     setSearchText(query);
     navigate(
-      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=1`
+      /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=1
     );
   };
 
@@ -69,7 +67,7 @@ function ListPage() {
     setCurrentPage(1);
     setStartPage(1);
     navigate(
-      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${newFilter}&page=1`
+      /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${newFilter}&page=1
     );
   };
 
@@ -81,7 +79,7 @@ function ListPage() {
       setStartPage(Math.max(1, newPage - maxPageNumbers + 1));
     }
     navigate(
-      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newPage}`
+      /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newPage}
     );
   };
 
@@ -92,7 +90,7 @@ function ListPage() {
       if (currentPage > newStartPage + pageSize - 1) {
         setCurrentPage(newStartPage);
         navigate(
-          `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}`
+          /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}
         );
       }
     } else {
@@ -104,7 +102,7 @@ function ListPage() {
       if (currentPage < newStartPage) {
         setCurrentPage(newStartPage);
         navigate(
-          `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}`
+          /list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newStartPage}
         );
       }
     }
@@ -114,6 +112,7 @@ function ListPage() {
     const pages = [];
     const endPage = Math.min(startPage + maxPageNumbers - 1, totalPages);
 
+    // 이전 10페이지로 이동
     if (startPage > 1) {
       pages.push(
         <button 
@@ -126,6 +125,7 @@ function ListPage() {
       );
     }
 
+    // 이전 페이지로 이동
     if (currentPage > 1) {
       pages.push(
         <button 
@@ -138,6 +138,7 @@ function ListPage() {
       );
     }
 
+    // 페이지 번호
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <button
@@ -150,6 +151,7 @@ function ListPage() {
       );
     }
 
+    // 다음 페이지로 이동
     if (currentPage < totalPages) {
       pages.push(
         <button 
@@ -162,6 +164,7 @@ function ListPage() {
       );
     }
 
+    // 다음 10페이지로 이동
     if (endPage < totalPages) {
       pages.push(
         <button 
@@ -235,7 +238,7 @@ function ListPage() {
         {items.map((item, index) => (
           <div key={index} className="bill-box">
             <div
-              onClick={() => navigate(`/detail/${item.bill_id}`)}
+              onClick={() => navigate(/detail/${item.bill_id})}
               style={{ cursor: "pointer" }}
             >
               <h3>{item.title}</h3>
@@ -251,10 +254,10 @@ function ListPage() {
         <div className="pagination">{renderPagination()}</div>
       </div>
 
+      {/* 마이페이지 팝업 */}
       {showMyPage && <MyPagePopup onClose={() => setShowMyPage(false)} />}
     </div>
   );
 }
 
 export default ListPage;
-
