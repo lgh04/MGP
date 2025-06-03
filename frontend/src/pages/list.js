@@ -1,3 +1,5 @@
+// src/pages/list.js
+
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./list.css";
@@ -32,12 +34,12 @@ function ListPage() {
 
   const [startPage, setStartPage] = useState(1);
   const pageSize = 10;
-  const maxPageNumbers = 10; // 한 번에 보여줄 페이지 번호 개수
+  const maxPageNumbers = 10;
 
   useEffect(() => {
     const fetchData = () => {
       fetch(
-        `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
+        `http://3.107.27.34:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
       )
         .then((res) => res.json())
         .then((data) => {
@@ -112,7 +114,6 @@ function ListPage() {
     const pages = [];
     const endPage = Math.min(startPage + maxPageNumbers - 1, totalPages);
 
-    // 이전 10페이지로 이동
     if (startPage > 1) {
       pages.push(
         <button 
@@ -125,7 +126,6 @@ function ListPage() {
       );
     }
 
-    // 이전 페이지로 이동
     if (currentPage > 1) {
       pages.push(
         <button 
@@ -138,7 +138,6 @@ function ListPage() {
       );
     }
 
-    // 페이지 번호
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <button
@@ -151,7 +150,6 @@ function ListPage() {
       );
     }
 
-    // 다음 페이지로 이동
     if (currentPage < totalPages) {
       pages.push(
         <button 
@@ -164,7 +162,6 @@ function ListPage() {
       );
     }
 
-    // 다음 10페이지로 이동
     if (endPage < totalPages) {
       pages.push(
         <button 
@@ -254,10 +251,10 @@ function ListPage() {
         <div className="pagination">{renderPagination()}</div>
       </div>
 
-      {/* 마이페이지 팝업 */}
       {showMyPage && <MyPagePopup onClose={() => setShowMyPage(false)} />}
     </div>
   );
 }
 
 export default ListPage;
+
