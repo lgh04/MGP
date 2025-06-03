@@ -1,3 +1,5 @@
+// src/components/MyPagePopup.js
+
 import React, { useState, useEffect } from 'react';
 import './MyPagePopup.css';
 import DiscussionPopup from './DiscussionPopup';
@@ -11,7 +13,7 @@ function MyPagePopup({ onClose }) {
   useEffect(() => {
     const fetchDiscussions = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/discussions/my', {
+        const response = await fetch('http://3.107.27.34:8000/api/discussions/my', {
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
@@ -39,16 +41,13 @@ function MyPagePopup({ onClose }) {
     const now = new Date();
     const diff = now - date;
 
-    // 24시간 이내
     if (diff < 24 * 60 * 60 * 1000) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-    // 일주일 이내
     if (diff < 7 * 24 * 60 * 60 * 1000) {
       const days = ['일', '월', '화', '수', '목', '금', '토'];
       return days[date.getDay()] + '요일';
     }
-    // 그 외
     return date.toLocaleDateString();
   };
 
@@ -128,4 +127,4 @@ function MyPagePopup({ onClose }) {
   );
 }
 
-export default MyPagePopup; 
+export default MyPagePopup;
