@@ -75,3 +75,9 @@ async def get_law(bill_id: str):
 def read_root():
     return {"message": "✅ FastAPI 서버가 정상 작동 중입니다!"}
 
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+
