@@ -1,4 +1,3 @@
-// src/components/CommentPopup.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './CommentPopup.css';
 
@@ -10,7 +9,7 @@ function CommentPopup({ onClose, billId }) {
   const fetchComments = useCallback(async () => {
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/comments/${billId}`, {
+      const response = await fetch(`http://3.107.27.34:8000/api/comments/${billId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -42,7 +41,7 @@ function CommentPopup({ onClose, billId }) {
 
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/comments/${billId}`, {
+      const response = await fetch(`http://3.107.27.34:8000/api/comments/${billId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +67,7 @@ function CommentPopup({ onClose, billId }) {
   const handleDelete = async (commentId) => {
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+      const response = await fetch(`http://3.107.27.34:8000/api/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -141,3 +140,4 @@ function CommentPopup({ onClose, billId }) {
 }
 
 export default CommentPopup;
+
