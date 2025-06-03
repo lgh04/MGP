@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './detail.css';
 import CommentPopup from '../components/CommentPopup';
+import MyPagePopup from '../components/MyPagePopup';
 
 function DetailPage() {
   const [selected, setSelected] = useState(null);
   const [showComments, setShowComments] = useState(false);
+  const [showMyPage, setShowMyPage] = useState(false);
   const [lawData, setLawData] = useState(null);
   const [voteData, setVoteData] = useState({
     agree_percent: 0,
@@ -145,7 +147,9 @@ function DetailPage() {
         <img src="/logo.png" alt="ACT:ON 로고" className="logo" />
         <div className="auth-buttons">
           {nickname ? (
-            <div className="user-nickname">{nickname}</div>
+            <div className="user-nickname" onClick={() => setShowMyPage(true)}>
+              {nickname}
+            </div>
           ) : (
             <>
               <button className="signin-btn" onClick={() => navigate('/login')}>Sign in</button>
@@ -240,6 +244,12 @@ function DetailPage() {
           <CommentPopup 
             onClose={() => setShowComments(false)} 
             billId={billId}
+          />
+        )}
+
+        {showMyPage && (
+          <MyPagePopup 
+            onClose={() => setShowMyPage(false)}
           />
         )}
       </main>

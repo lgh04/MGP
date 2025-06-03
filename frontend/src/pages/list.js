@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./list.css";
+import MyPagePopup from '../components/MyPagePopup';
 
 function ListPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [nickname, setNickname] = useState(null);
+  const [showMyPage, setShowMyPage] = useState(false);
 
   useEffect(() => {
     const storedNickname = sessionStorage.getItem("nickname");
@@ -58,60 +60,59 @@ function ListPage() {
     );
   };
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+    setStartPage(1);
     navigate(
-      `/list?query=${encodeURIComponent(searchText)}&mode=${mode}&sort=${filter}&page=${pageNumber}`
+      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${newFilter}&page=1`
     );
   };
 
-  const handleFilterChange = (type) => {
-    setFilter(type);
-    setCurrentPage(1);
-    setStartPage(1);
-  };
-
-  const handlePrevGroup = () => {
-    setStartPage(Math.max(startPage - pageSize, 1));
-  };
-
-  const handleNextGroup = () => {
-    if (startPage + pageSize <= totalPages) {
-      setStartPage(startPage + pageSize);
-    }
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    navigate(
+      `/list?query=${encodeURIComponent(query)}&mode=${mode}&sort=${filter}&page=${newPage}`
+    );
   };
 
   const renderPagination = () => {
     const pages = [];
-    const endPage = Math.min(startPage + pageSize - 1, totalPages);
+    const maxButtons = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let end = Math.min(totalPages, start + maxButtons - 1);
 
-    pages.push(
-      <button key="prev" onClick={handlePrevGroup} disabled={startPage === 1}>
-        ◀
-      </button>
-    );
+    if (end - start + 1 < maxButtons) {
+      start = Math.max(1, end - maxButtons + 1);
+    }
 
-    for (let i = startPage; i <= endPage; i++) {
+    if (currentPage > 1) {
+      pages.push(
+        <button key="prev" onClick={() => handlePageChange(currentPage - 1)}>
+          이전
+        </button>
+      );
+    }
+
+    for (let i = start; i <= end; i++) {
       pages.push(
         <button
           key={i}
-          className={currentPage === i ? "active" : ""}
           onClick={() => handlePageChange(i)}
+          className={currentPage === i ? "active" : ""}
         >
           {i}
         </button>
       );
     }
 
-    pages.push(
-      <button
-        key="next"
-        onClick={handleNextGroup}
-        disabled={endPage >= totalPages}
-      >
-        ▶
-      </button>
-    );
+    if (currentPage < totalPages) {
+      pages.push(
+        <button key="next" onClick={() => handlePageChange(currentPage + 1)}>
+          다음
+        </button>
+      );
+    }
 
     return pages;
   };
@@ -139,7 +140,13 @@ function ListPage() {
 
         <div className="auth-buttons">
           {nickname ? (
-            <div className="user-nickname">{nickname}</div>
+            <div 
+              className="user-nickname"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setShowMyPage(true)}
+            >
+              {nickname}
+            </div>
           ) : (
             <>
               <button className="signin-btn" onClick={() => navigate("/login")}>
@@ -183,6 +190,9 @@ function ListPage() {
 
         <div className="pagination">{renderPagination()}</div>
       </div>
+
+      {/* 마이페이지 팝업 */}
+      {showMyPage && <MyPagePopup onClose={() => setShowMyPage(false)} />}
     </div>
   );
 }

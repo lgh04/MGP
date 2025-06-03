@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './home.css';
-import DebatePopup from '../components/DebatePopup'; // 팝업 컴포넌트 import
+import MyPagePopup from '../components/MyPagePopup';
 
 function Home() {
   const navigate = useNavigate();
@@ -127,7 +127,7 @@ function Home() {
       </section>
 
       {/* 팝업 */}
-      {showPopup && <DebatePopup onClose={() => setShowPopup(false)} />}
+      {showPopup && <MyPagePopup onClose={() => setShowPopup(false)} />}
     </div>
   );
 }

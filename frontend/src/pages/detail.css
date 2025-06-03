@@ -233,3 +233,16 @@
   font-weight: bold;
   color: #222;
 }
+
+.user-nickname {
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.user-nickname:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
