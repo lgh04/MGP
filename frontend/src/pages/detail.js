@@ -35,7 +35,7 @@ function DetailPage() {
     
     const fetchLawDetail = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/law/${billId}`);
+        const response = await fetch(`http://3.107.27.34:8000/api/law/${billId}`);
         const data = await response.json();
         
         if (!response.ok) {
@@ -58,7 +58,7 @@ function DetailPage() {
     const fetchVoteStatus = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
+        const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}`, {
           credentials: 'include',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -81,7 +81,7 @@ function DetailPage() {
 
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/vote/${billId}/user`, {
+        const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}/user`, {
           credentials: 'include',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -105,7 +105,7 @@ function DetailPage() {
       if (!nickname) return;
 
       try {
-        const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
+        const response = await fetch(`http://3.107.27.34:8000/api/discussions/${billId}/join`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`
@@ -133,7 +133,7 @@ function DetailPage() {
 
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
+      const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ function DetailPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
+      const response = await fetch(`http://3.107.27.34:8000/api/discussions/${billId}/join`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
@@ -325,4 +325,3 @@ function DetailPage() {
 }
 
 export default DetailPage;
-
