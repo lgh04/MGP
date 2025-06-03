@@ -35,7 +35,7 @@ function DetailPage() {
     
     const fetchLawDetail = async () => {
       try {
-        const response = await fetch(`http://3.107.27.34:8000/api/law/${billId}`);
+        const response = await fetch(http://localhost:8000/api/law/${billId});
         const data = await response.json();
         
         if (!response.ok) {
@@ -58,10 +58,10 @@ function DetailPage() {
     const fetchVoteStatus = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}`, {
+        const response = await fetch(http://localhost:8000/api/vote/${billId}, {
           credentials: 'include',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': Bearer ${token}
           }
         });
         const data = await response.json();
@@ -81,10 +81,10 @@ function DetailPage() {
 
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}/user`, {
+        const response = await fetch(http://localhost:8000/api/vote/${billId}/user, {
           credentials: 'include',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': Bearer ${token}
           }
         });
         const data = await response.json();
@@ -105,10 +105,10 @@ function DetailPage() {
       if (!nickname) return;
 
       try {
-        const response = await fetch(`http://3.107.27.34:8000/api/discussions/${billId}/join`, {
+        const response = await fetch(http://localhost:8000/api/discussions/${billId}/join, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+            'Authorization': Bearer ${sessionStorage.getItem('token')}
           }
         });
         const data = await response.json();
@@ -133,11 +133,11 @@ function DetailPage() {
 
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}`, {
+      const response = await fetch(http://localhost:8000/api/vote/${billId}, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': Bearer ${token}
         },
         credentials: 'include',
         body: JSON.stringify({ vote_type: voteType })
@@ -169,10 +169,10 @@ function DetailPage() {
     }
 
     try {
-      const response = await fetch(`http://3.107.27.34:8000/api/discussions/${billId}/join`, {
+      const response = await fetch(http://localhost:8000/api/discussions/${billId}/join, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          'Authorization': Bearer ${sessionStorage.getItem('token')}
         }
       });
       const data = await response.json();
@@ -229,7 +229,7 @@ function DetailPage() {
                 <div className="bar-background">
                   <div 
                     className="bar-fill agree-bar" 
-                    style={{ width: `${voteData.agree_percent}%` }}
+                    style={{ width: ${voteData.agree_percent}% }}
                   >
                     <span className="bar-percent-text">{voteData.agree_percent}%</span>
                   </div>
@@ -245,7 +245,7 @@ function DetailPage() {
                 <div className="bar-background disagree-background">
                   <div 
                     className="bar-fill disagree-bar" 
-                    style={{ width: `${voteData.disagree_percent}%` }}
+                    style={{ width: ${voteData.disagree_percent}% }}
                   >
                     <span className="bar-percent-text">{voteData.disagree_percent}%</span>
                   </div>
