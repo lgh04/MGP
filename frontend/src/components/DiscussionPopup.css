@@ -77,7 +77,7 @@
 }
 
 .my-message .message-content {
-  background-color: #a7c7e7;
+  background-color: #e3f2fd;
   color: #000;
 }
 
@@ -123,8 +123,8 @@
 }
 
 .message-input-container button {
-  background-color: #a7c7e7;
-  color: white;
+  background-color: #e3f2fd;
+  color: #333;
   border: none;
   border-radius: 20px;
   padding: 8px 20px;
@@ -134,7 +134,7 @@
 }
 
 .message-input-container button:hover {
-  background-color: #86b0d9;
+  background-color: #bbdefb;
 }
 
 /* 스크롤바 스타일링 */

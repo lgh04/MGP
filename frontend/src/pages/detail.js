@@ -10,6 +10,8 @@ function DetailPage() {
   const [showComments, setShowComments] = useState(false);
   const [showMyPage, setShowMyPage] = useState(false);
   const [lawData, setLawData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [voteData, setVoteData] = useState({
     agree_percent: 0,
     disagree_percent: 0,
@@ -31,21 +33,34 @@ function DetailPage() {
   }, []);
 
   useEffect(() => {
-    if (!billId) return;
+    if (!billId) {
+      setError("법안 ID가 유효하지 않습니다.");
+      setIsLoading(false);
+      return;
+    }
     
     const fetchLawDetail = async () => {
       try {
-        const response = await fetch(`http://3.107.27.34:8000/api/law/${billId}`);
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await fetch(`http://localhost:8000/api/law/${billId}`);
         const data = await response.json();
         
         if (!response.ok) {
-          console.error("법안 정보 조회 실패:", data.detail || data.error);
-          return;
+          throw new Error(data.error || data.detail || "법안 정보를 불러오는데 실패했습니다.");
+        }
+        
+        if (data.error) {
+          throw new Error(data.error);
         }
         
         setLawData(data);
       } catch (err) {
-        console.error("법안 정보를 불러오는 데 실패했습니다:", err);
+        console.error("법안 정보를 불러오는데 실패했습니다:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -58,7 +73,7 @@ function DetailPage() {
     const fetchVoteStatus = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}`, {
+        const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
           credentials: 'include',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -66,9 +81,11 @@ function DetailPage() {
         });
         const data = await response.json();
         
-        if (response.ok) {
-          setVoteData(data);
+        if (!response.ok) {
+          throw new Error(data.detail || "투표 현황을 불러오는데 실패했습니다.");
         }
+        
+        setVoteData(data);
       } catch (err) {
         console.error("투표 현황을 불러오는 데 실패했습니다:", err);
       }
@@ -81,7 +98,7 @@ function DetailPage() {
 
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}/user`, {
+        const response = await fetch(`http://localhost:8000/api/vote/${billId}/user`, {
           credentials: 'include',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -89,7 +106,11 @@ function DetailPage() {
         });
         const data = await response.json();
         
-        if (response.ok && data.vote_type) {
+        if (!response.ok) {
+          throw new Error(data.detail || "사용자 투표 정보를 불러오는데 실패했습니다.");
+        }
+        
+        if (data.vote_type) {
           setSelected(data.vote_type);
         }
       } catch (err) {
@@ -105,13 +126,18 @@ function DetailPage() {
       if (!nickname) return;
 
       try {
-        const response = await fetch(`http://3.107.27.34:8000/api/discussions/${billId}/join`, {
+        const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
         });
         const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.detail || "토론방 참여 상태 확인에 실패했습니다.");
+        }
+        
         setIsParticipating(data.is_participating);
         if (data.is_participating) {
           setDiscussionId(data.id);
@@ -133,7 +159,13 @@ function DetailPage() {
 
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`http://3.107.27.34:8000/api/vote/${billId}`, {
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/vote/${billId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,19 +175,14 @@ function DetailPage() {
         body: JSON.stringify({ vote_type: voteType })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "투표에 실패했습니다.");
-      }
-
       const data = await response.json();
       
-      if (response.ok) {
-        setSelected(voteType);
-        setVoteData(data);
-      } else {
-        alert(data.detail || "투표에 실패했습니다.");
+      if (!response.ok) {
+        throw new Error(data.detail || "투표에 실패했습니다.");
       }
+
+      setSelected(voteType);
+      setVoteData(data);
     } catch (err) {
       console.error("투표 처리 중 오류가 발생했습니다:", err);
       alert(err.message || "투표 처리 중 오류가 발생했습니다.");
@@ -165,21 +192,37 @@ function DetailPage() {
   const handleDiscussionClick = async () => {
     if (!nickname) {
       alert('로그인이 필요합니다.');
+      navigate("/login");
       return;
     }
 
     try {
-      const response = await fetch(`http://3.107.27.34:8000/api/discussions/${billId}/join`, {
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/discussions/${billId}/join`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       });
+      
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "토론방 참여에 실패했습니다.");
+      }
+
       setIsParticipating(true);
       setDiscussionId(data.id);
+      alert('토론방 참여가 완료되었습니다. 마이페이지에서 토론방에 입장할 수 있습니다.');
     } catch (error) {
       console.error('토론방 참여 실패:', error);
+      alert(error.message || "토론방 참여에 실패했습니다.");
     }
   };
 
@@ -193,83 +236,100 @@ function DetailPage() {
   return (
     <div className="detail-page">
       <header className="detail-header">
-        <img src="/logo.png" alt="ACT:ON 로고" className="logo" />
+        <img 
+          src="/logo.png" 
+          alt="ACT:ON 로고" 
+          className="logo" 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        />
         <div className="auth-buttons">
           {nickname ? (
-            <div className="user-nickname" onClick={() => setShowMyPage(true)}>
+            <div
+              className="user-nickname"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setShowMyPage(true)}
+            >
               {nickname}
             </div>
           ) : (
             <>
-              <button className="signin-btn" onClick={() => navigate('/login')}>Sign in</button>
-              <button className="register-btn" onClick={() => navigate('/register')}>Register</button>
+              <button onClick={() => navigate('/login')}>Sign in</button>
+              <button onClick={() => navigate('/register')}>Register</button>
             </>
           )}
         </div>
       </header>
 
       <main className="detail-container">
-        <h1 className="bill-title">{lawData?.BILL_NAME || '법안 제목 불러오는 중...'}</h1>
-
-        <div className="vote-section">
-          {selected && (
-            <div className="vote-actions">
-              <div className="comment-toggle" onClick={() => setShowComments(true)}>
-                댓글보기
-              </div>
-            </div>
-          )}
-
-          <div className="vote-box">
-            <div className="vote-bars">
-              <div className="bar-wrapper" onClick={() => handleVote('agree')}>
-                <div className="bar-label-top">
-                  찬성 {selected === 'agree' && '✔'}
-                </div>
-                <div className="bar-background">
-                  <div 
-                    className="bar-fill agree-bar" 
-                    style={{ width: `${voteData.agree_percent}%` }}
-                  >
-                    <span className="bar-percent-text">{voteData.agree_percent}%</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="vs-text">VS</div>
-
-              <div className="bar-wrapper" onClick={() => handleVote('disagree')}>
-                <div className="bar-label-top">
-                  {selected === 'disagree' && '✔'} 반대
-                </div>
-                <div className="bar-background disagree-background">
-                  <div 
-                    className="bar-fill disagree-bar" 
-                    style={{ width: `${voteData.disagree_percent}%` }}
-                  >
-                    <span className="bar-percent-text">{voteData.disagree_percent}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="participant-count">
-              {formatNumber(voteData.total_count)}명 참여중
-            </div>
+        {isLoading ? (
+          <div className="loading">법안 정보를 불러오는 중...</div>
+        ) : error ? (
+          <div className="error">
+            <p>{error}</p>
+            <button onClick={() => navigate('/')}>홈으로 돌아가기</button>
           </div>
+        ) : lawData ? (
+          <>
+            <h1 className="bill-title">{lawData.BILL_NAME || '제목 없음'}</h1>
 
-          {selected && (
-            <div className="bottom-actions">
-              <div className="discussion-link" onClick={handleDiscussionClick}>
-                {isParticipating ? '토론방 참여중' : '토론방 참여하기'}
+            <div className="vote-section">
+              {selected && (
+                <div className="vote-actions">
+                  <div className="comment-toggle" onClick={() => setShowComments(true)}>
+                    댓글보기
+                  </div>
+                </div>
+              )}
+
+              <div className="vote-box">
+                <div className="vote-bars">
+                  <div className="bar-wrapper" onClick={() => handleVote('agree')}>
+                    <div className="bar-label-top">
+                      찬성 {selected === 'agree' && '✔'}
+                    </div>
+                    <div className="bar-background">
+                      <div 
+                        className="bar-fill agree-bar" 
+                        style={{ width: `${voteData.agree_percent}%` }}
+                      >
+                        <span className="bar-percent-text">{voteData.agree_percent}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="vs-text">VS</div>
+
+                  <div className="bar-wrapper" onClick={() => handleVote('disagree')}>
+                    <div className="bar-label-top">
+                      {selected === 'disagree' && '✔'} 반대
+                    </div>
+                    <div className="bar-background disagree-background">
+                      <div 
+                        className="bar-fill disagree-bar" 
+                        style={{ width: `${voteData.disagree_percent}%` }}
+                      >
+                        <span className="bar-percent-text">{voteData.disagree_percent}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="participant-count">
+                  {formatNumber(voteData.total_count)}명 참여중
+                </div>
               </div>
-            </div>
-          )}
-        </div>
 
-        <div className="bill-image"></div>
-        <div className="bill-content">
-          {lawData ? (
-            <>
+              {selected && (
+                <div className="bottom-actions">
+                  <div className="discussion-link" onClick={handleDiscussionClick}>
+                    {isParticipating ? '토론방 참여중' : '토론방 참여하기'}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="bill-image"></div>
+            <div className="bill-content">
               <p><strong>법안 ID:</strong> {lawData.BILL_ID}</p>
               <p><strong>법안번호:</strong> {lawData.BILL_NO}</p>
               <p><strong>대수:</strong> {lawData.AGE}</p>
@@ -293,33 +353,33 @@ function DetailPage() {
               <p><strong>대표발의자 코드:</strong> {lawData.RST_MONA_CD}</p>
               <p><strong>본회의 심의결과:</strong> {lawData.PROC_RESULT_CD}</p>
               <p><strong>의결일:</strong> {lawData.PROC_DT}</p>
-            </>
-          ) : (
-            <p>법안 상세 정보를 불러오는 중...</p>
-          )}
-        </div>
-
-        {showComments && (
-          <CommentPopup 
-            onClose={() => setShowComments(false)} 
-            billId={billId}
-          />
-        )}
-
-        {showMyPage && (
-          <MyPagePopup 
-            onClose={() => setShowMyPage(false)}
-          />
-        )}
-
-        {showDiscussion && discussionId && (
-          <DiscussionPopup
-            discussionId={discussionId}
-            billName={lawData?.BILL_NAME}
-            onClose={() => setShowDiscussion(false)}
-          />
+            </div>
+          </>
+        ) : (
+          <div className="error">법안 정보를 찾을 수 없습니다.</div>
         )}
       </main>
+
+      {showComments && (
+        <CommentPopup 
+          onClose={() => setShowComments(false)} 
+          billId={billId}
+        />
+      )}
+
+      {showMyPage && (
+        <MyPagePopup 
+          onClose={() => setShowMyPage(false)}
+        />
+      )}
+
+      {showDiscussion && discussionId && (
+        <DiscussionPopup
+          discussionId={discussionId}
+          billName={lawData?.BILL_NAME}
+          onClose={() => setShowDiscussion(false)}
+        />
+      )}
     </div>
   );
 }

@@ -19,7 +19,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
     // 기존 메시지 로드
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://3.107.27.34:8000/api/discussions/${discussionId}/messages`, {
+        const response = await fetch(`http://localhost:8000/api/discussions/${discussionId}/messages`, {
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
@@ -35,7 +35,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
 
     // WebSocket 연결
     const token = sessionStorage.getItem('token');
-    const wsConnection = new WebSocket(`ws://3.107.27.34:8000/api/discussions/${discussionId}/ws?token=${token}`);
+    const wsConnection = new WebSocket(`ws://localhost:8000/api/discussions/${discussionId}/ws?token=${token}`);
 
     wsConnection.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -80,9 +80,9 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`message ${message.user_id === parseInt(sessionStorage.getItem('userId')) ? 'my-message' : 'other-message'}`}
+            className={`message ${message.user_nickname === sessionStorage.getItem('nickname') ? 'my-message' : 'other-message'}`}
           >
-            {message.user_id !== parseInt(sessionStorage.getItem('userId')) && (
+            {message.user_nickname !== sessionStorage.getItem('nickname') && (
               <div className="message-nickname">{message.user_nickname}</div>
             )}
             <div className="message-content">{message.content}</div>

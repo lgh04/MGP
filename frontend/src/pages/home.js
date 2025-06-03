@@ -12,6 +12,7 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState("발의");
   const [showPopup, setShowPopup] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const storedNickname = sessionStorage.getItem("nickname");
@@ -21,22 +22,37 @@ function Home() {
   }, []);
 
   // React Query를 사용한 법안 데이터 페칭
-  const { data: laws = { 공포: [], 발의: [] }, isLoading } = useQuery({
+  const { data: laws = { 공포: [], 발의: [] }, isLoading, isError } = useQuery({
     queryKey: ['home-laws'],
     queryFn: async () => {
       try {
-        const response = await fetch("http://3.107.27.34:8000/api/laws", {
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        // 공포와 발의 법안을 각각 가져옴
+        const [processedResponse, proposedResponse] = await Promise.all([
+          fetch("http://localhost:8000/api/law-list?page=1&mode=공포", {
+            headers: { 'Accept': 'application/json' }
+          }),
+          fetch("http://localhost:8000/api/law-list?page=1&mode=발의", {
+            headers: { 'Accept': 'application/json' }
+          })
+        ]);
+
+        if (!processedResponse.ok || !proposedResponse.ok) {
+          throw new Error('서버 응답 오류가 발생했습니다.');
         }
-        return response.json();
+
+        const [processedData, proposedData] = await Promise.all([
+          processedResponse.json(),
+          proposedResponse.json()
+        ]);
+
+        return {
+          공포: processedData.items || [],
+          발의: proposedData.items || []
+        };
       } catch (error) {
-        console.error("법안 불러오기 실패:", error);
-        return { 공포: [], 발의: [] };
+        console.error("법안 데이터 로딩 실패:", error);
+        setError(error.message);
+        throw error;
       }
     },
     staleTime: 1000 * 60 * 5,
@@ -106,6 +122,10 @@ function Home() {
 
         {isLoading ? (
           <div className="loading">데이터를 불러오는 중...</div>
+        ) : isError ? (
+          <div className="error">
+            {error || "법안 데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요."}
+          </div>
         ) : (
           <div className="law-boxes">
             {["공포", "발의"].map((mode) => (

@@ -13,7 +13,7 @@ function MyPagePopup({ onClose }) {
   useEffect(() => {
     const fetchDiscussions = async () => {
       try {
-        const response = await fetch('http://3.107.27.34:8000/api/discussions/my', {
+        const response = await fetch('http://localhost:8000/api/discussions/my', {
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
