@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.db.models import User
+from backend.db.models import User  # 절대 경로로 수정
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

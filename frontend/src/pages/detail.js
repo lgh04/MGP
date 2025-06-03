@@ -235,11 +235,14 @@ function DetailPage() {
             <p>법안 상세 정보를 불러오는 중...</p>
           )}
         </div>
-      </main>
 
-      {showComments && (
-        <CommentPopup onClose={() => setShowComments(false)} />
-      )}
+        {showComments && (
+          <CommentPopup 
+            onClose={() => setShowComments(false)} 
+            billId={billId}
+          />
+        )}
+      </main>
     </div>
   );
 }

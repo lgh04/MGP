@@ -20,3 +20,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# 데이터베이스 테이블 생성
+def create_tables():
+    from . import models  # 모델 import
+    Base.metadata.create_all(bind=engine)
+
+# 테이블 생성 실행
+create_tables()
