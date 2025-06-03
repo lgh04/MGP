@@ -25,7 +25,7 @@ function Home() {
     queryKey: ['home-laws'],
     queryFn: async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/laws", {
+        const response = await fetch("http://3.107.27.34:8000/api/laws", {
           headers: {
             'Accept': 'application/json'
           }
@@ -39,10 +39,10 @@ function Home() {
         return { 공포: [], 발의: [] };
       }
     },
-    staleTime: 1000 * 60 * 5, // 5분 동안 데이터를 신선한 상태로 유지
-    cacheTime: 1000 * 60 * 30, // 30분 동안 캐시 유지
-    refetchInterval: 60000, // 1분마다 자동 갱신
-    refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 리페치 비활성화
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 30,
+    refetchInterval: 60000,
+    refetchOnWindowFocus: false,
   });
 
   const handleSearch = () => {
