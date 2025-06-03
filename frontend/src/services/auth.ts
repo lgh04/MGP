@@ -18,7 +18,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     formData.append('username', email);  // OAuth2 형식에 맞춰 username으로 전송
     formData.append('password', password);
 
-    const response = await axios.post(`${API_URL}/login`, formData);
+    const response = await axios.post(${API_URL}/login, formData);
     const data = response.data;
     
     // 토큰과 사용자 정보를 세션 스토리지에 저장
@@ -69,11 +69,11 @@ axios.interceptors.request.use(
     (config) => {
         const token = getToken();
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers.Authorization = Bearer ${token};
         }
         return config;
     },
     (error) => {
         return Promise.reject(error);
     }
-);
+); 
