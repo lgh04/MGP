@@ -1,15 +1,26 @@
 .mypage-popup {
-  position: absolute;
-  top: 60px;  /* 헤더 높이 + 약간의 여백 */
-  right: 40px;  /* 오른쪽 여백 */
+  position: fixed;
+  top: 60px;  /* 헤더 아래 위치하도록 조정 */
+  right: 40px;
   width: 400px;
   height: 600px;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  z-index: 1000;
+  z-index: 1002;
+}
+
+/* 팝업 외부 클릭 시 닫히도록 하는 오버레이 */
+.mypage-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1001;
 }
 
 .mypage-header {

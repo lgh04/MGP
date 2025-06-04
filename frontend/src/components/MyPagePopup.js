@@ -68,6 +68,7 @@ function MyPagePopup({ onClose }) {
 
   return (
     <>
+      <div className="mypage-overlay" onClick={onClose} />
       <div className="mypage-popup" ref={popupRef} onClick={(e) => e.stopPropagation()}>
         <div className="mypage-header">
           <h2>마이페이지</h2>

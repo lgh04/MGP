@@ -13,6 +13,10 @@
   padding: 10px 40px;
   background: white;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  position: relative;
+  z-index: 1000;
+  height: 60px;
+  box-sizing: border-box;
 }
 
 .logo-top {
@@ -22,6 +26,7 @@
 .auth-buttons {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .auth-buttons button {
