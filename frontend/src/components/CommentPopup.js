@@ -32,7 +32,7 @@ function CommentPopup({ onClose, billId }) {
         throw new Error(data.detail || "댓글을 불러오는데 실패했습니다.");
       }
       
-      setComments(data);
+      setComments(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
     } catch (err) {
       console.error("댓글을 불러오는데 실패했습니다:", err);
       setError(err.message);
@@ -172,7 +172,7 @@ function CommentPopup({ onClose, billId }) {
           ) : comments.length === 0 ? (
             <div className="no-comments">아직 댓글이 없습니다.</div>
           ) : (
-            [...comments].reverse().map(comment => (
+            comments.map(comment => (
               <div key={comment.id} className="comment">
                 <div className="comment-header">
                   <span className="comment-author">{comment.user_nickname}</span>
