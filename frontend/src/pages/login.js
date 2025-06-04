@@ -51,7 +51,13 @@ function Login() {
   return (
     <div className="login-page">
       <header className="login-header">
-        <img src="/logo.png" alt="ACT:ON 로고" className="logo-top" />
+        <img 
+          src="/logo.png" 
+          alt="ACT:ON 로고" 
+          className="logo-top" 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        />
         {userNickname ? (
           <div className="user-nickname">{userNickname}</div>
         ) : (

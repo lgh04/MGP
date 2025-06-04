@@ -140,7 +140,13 @@ function Register() {
   return (
     <div className="register-page">
       <header className="register-header">
-        <img src="/logo.png" alt="ACT:ON 로고 상단" className="logo-top" />
+        <img 
+          src="/logo.png" 
+          alt="ACT:ON 로고 상단" 
+          className="logo-top" 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        />
         <div className="auth-buttons">
           <button className="signin-btn" onClick={() => navigate("/login")}>Sign in</button>
           <button className="register-btn" onClick={() => navigate("/register")}>Register</button>

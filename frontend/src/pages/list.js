@@ -183,7 +183,13 @@ function ListPage() {
   return (
     <div className="list-page">
       <div className="list-header">
-        <img className="logo" src="/logo.png" alt="ACT:ON Logo" />
+        <img 
+          className="logo" 
+          src="/logo.png" 
+          alt="ACT:ON Logo" 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        />
 
         <div className="search-bar">
           <select value={mode} onChange={(e) => setMode(e.target.value)}>

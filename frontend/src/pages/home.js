@@ -70,7 +70,13 @@ function Home() {
   return (
     <div className="home-page">
       <header className="home-header">
-        <img src="/logo.png" alt="ACT:ON 로고" className="logo-top" />
+        <img 
+          src="/logo.png" 
+          alt="ACT:ON 로고" 
+          className="logo-top" 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        />
         <div className="auth-buttons">
           {nickname ? (
             <div
