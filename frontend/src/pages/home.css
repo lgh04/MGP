@@ -45,15 +45,19 @@
 
 .user-nickname {
   font-size: 16px;
-  font-family: 'Jacques Francois', serif;
-  font-weight: 600;
+  font-family: 'NanumBarunGothic', sans-serif;
+  font-weight: 500;
   color: #333;
   margin-left: 10px;
   padding: 6px 16px;
-  border: 2px solid #a7c7e7;
-  border-radius: 4px;
-  background-color: #f1f9ff;
-  cursor: default;
+  border-bottom: 2px solid #a7c7e7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-nickname:hover {
+  border-bottom-color: #1963ac;
+  color: #1963ac;
 }
 
 .home-center {
