@@ -56,7 +56,7 @@ async def get_bill_name(bill_id: str) -> str:
     """법안 API에서 법안 제목을 가져옵니다."""
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(f"http://localhost:8000/api/law/{bill_id}")
+            response = await client.get(f"${process.env.NEXT_PUBLIC_API_URL}/api/law/{bill_id}")
             if response.status_code == 200:
                 data = response.json()
                 return data.get("BILL_NAME", "알 수 없는 법안")

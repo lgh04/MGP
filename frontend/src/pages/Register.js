@@ -48,7 +48,7 @@ function Register() {
       const timer = setTimeout(async () => {
         if (value.trim().length < 2) return;
         try {
-          const res = await fetch(`http://localhost:8000/api/check-nickname?nickname=${value}`);
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/api/check-nickname?nickname=${value}`);
           const data = await res.json();
           setNicknameError(!data.available);
         } catch (err) {
@@ -62,7 +62,7 @@ function Register() {
 
   const sendEmailCode = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/send-email-code", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/send-email-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email })
@@ -78,7 +78,7 @@ function Register() {
 
   const verifyEmailCode = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/verify-email-code", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/verify-email-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, code: emailCode })
@@ -113,7 +113,7 @@ function Register() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/api/register", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

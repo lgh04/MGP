@@ -16,7 +16,7 @@ function Login() {
       formData.append('username', email);  // OAuth2 형식에 맞춰 username으로 전송
       formData.append('password', password);
 
-      const res = await fetch("http://localhost:8000/api/login", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
         method: "POST",
         body: formData,
         credentials: 'include',

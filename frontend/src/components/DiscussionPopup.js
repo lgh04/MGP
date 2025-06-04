@@ -27,7 +27,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
     // 기존 메시지 로드
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/discussions/${discussionId}/messages`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/discussions/${discussionId}/messages`, {
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`
           }
@@ -70,7 +70,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
 
   const checkUserRestriction = async (userId, discussionId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/discussions/users/${userId}/report-status/${discussionId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/discussions/users/${userId}/report-status/${discussionId}`, {
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
@@ -129,7 +129,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
         throw new Error('메시지를 찾을 수 없습니다.');
       }
 
-      const response = await fetch(`http://localhost:8000/api/discussions/${discussionId}/report`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/discussions/${discussionId}/report`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,

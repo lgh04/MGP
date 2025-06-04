@@ -28,10 +28,10 @@ function Home() {
       try {
         // 공포와 발의 법안을 각각 가져옴
         const [processedResponse, proposedResponse] = await Promise.all([
-          fetch("http://localhost:8000/api/law-list?page=1&mode=공포", {
+          fetch(`${process.env.REACT_APP_API_URL}/api/law-list?page=1&mode=공포`, {
             headers: { 'Accept': 'application/json' }
           }),
-          fetch("http://localhost:8000/api/law-list?page=1&mode=발의", {
+          fetch(`${process.env.REACT_APP_API_URL}/api/law-list?page=1&mode=발의`, {
             headers: { 'Accept': 'application/json' }
           })
         ]);

@@ -20,7 +20,7 @@ function CommentPopup({ onClose, billId }) {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/comments/${billId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/comments/${billId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -67,7 +67,7 @@ function CommentPopup({ onClose, billId }) {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/comments/${billId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/comments/${billId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ function CommentPopup({ onClose, billId }) {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -37,7 +37,7 @@ function ListPage() {
   useEffect(() => {
     const fetchData = () => {
       fetch(
-        `http://localhost:8000/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
+        `${process.env.REACT_APP_API_URL}/api/law-list?query=${searchText}&mode=${mode}&sort=${filter}&page=${currentPage}`
       )
         .then((res) => res.json())
         .then((data) => {
