@@ -41,39 +41,55 @@ class Discussion(Base):
             else:
                 print(f"테이블이 이미 존재함: {table_name}")
 
-    def check_and_restrict_user(self, db, user_id: int) -> bool:
-        """사용자의 신고 횟수를 확인하고 필요시 채팅을 제한합니다."""
+    def check_and_restrict_user(self, user_id):
+        """사용자가 3번 신고당했는지 확인하고 제한을 적용합니다."""
         table_name = f"discussion_{self.id}_reports"
         
-        # 해당 사용자에 대한 신고 횟수 조회
-        count_query = text(f"""
-            SELECT COUNT(DISTINCT reporter_id) 
-            FROM {table_name} 
-            WHERE reported_user_id = :user_id
-        """)
-        
-        result = db.execute(count_query, {"user_id": user_id}).scalar()
-        
-        # 3회 이상 신고 받았다면 채팅 제한
-        if result >= 3:
-            # 기존 제한이 있는지 확인
-            existing_restriction = db.query(UserChatRestriction).filter(
-                UserChatRestriction.user_id == user_id,
-                UserChatRestriction.discussion_id == self.id,
-                UserChatRestriction.restricted_until > datetime.now()
-            ).first()
-
-            if not existing_restriction:
-                restriction = UserChatRestriction(
-                    user_id=user_id,
-                    discussion_id=self.id,
-                    restricted_until=datetime.now() + timedelta(hours=24)
-                )
-                db.add(restriction)
-                db.commit()
-            return True
+        with engine.connect() as conn:
+            # 해당 사용자가 받은 신고 수 확인
+            result = conn.execute(text(f"""
+                SELECT COUNT(*) as report_count 
+                FROM {table_name} 
+                WHERE reported_user_id = :user_id
+            """), {"user_id": user_id})
             
+            report_count = result.scalar()
+            
+            if report_count >= 3:
+                # 이미 제한이 있는지 확인
+                restriction_check = conn.execute(text("""
+                    SELECT * FROM user_chat_restrictions 
+                    WHERE user_id = :user_id AND discussion_id = :discussion_id 
+                    AND restricted_until > datetime('now')
+                """), {"user_id": user_id, "discussion_id": self.id})
+                
+                if not restriction_check.fetchone():
+                    # 24시간 제한 적용
+                    restriction_end = datetime.now() + timedelta(hours=24)
+                    conn.execute(text("""
+                        INSERT INTO user_chat_restrictions (user_id, discussion_id, restricted_until)
+                        VALUES (:user_id, :discussion_id, :restricted_until)
+                    """), {
+                        "user_id": user_id,
+                        "discussion_id": self.id,
+                        "restricted_until": restriction_end
+                    })
+                    conn.commit()
+                    print(f"사용자 {user_id}가 토론방 {self.id}에서 24시간 제한됨")
+                    return True
         return False
+
+class UserChatRestriction(Base):
+    __tablename__ = "user_chat_restrictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    discussion_id = Column(Integer, ForeignKey("discussions.id"))
+    restricted_until = Column(DateTime)
+    created_at = Column(DateTime, default=func.now())
+
+    user = relationship("User")
+    discussion = relationship("Discussion")
 
 class DiscussionParticipant(Base):
     __tablename__ = "discussion_participants"
@@ -96,23 +112,4 @@ class DiscussionMessage(Base):
     created_at = Column(DateTime, default=func.now())
 
     discussion = relationship("Discussion", back_populates="messages")
-    user = relationship("User")
-
-class UserChatRestriction(Base):
-    __tablename__ = "user_chat_restrictions"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    discussion_id = Column(Integer, ForeignKey("discussions.id"))
-    restricted_until = Column(DateTime)
-    created_at = Column(DateTime, default=func.now())
-
-    @classmethod
-    def is_restricted(cls, db, user_id: int, discussion_id: int) -> bool:
-        """사용자가 현재 채팅 제한 상태인지 확인합니다."""
-        restriction = db.query(cls).filter(
-            cls.user_id == user_id,
-            cls.discussion_id == discussion_id,
-            cls.restricted_until > datetime.now()
-        ).first()
-        return bool(restriction) 
+    user = relationship("User") 

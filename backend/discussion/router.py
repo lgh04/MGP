@@ -6,7 +6,7 @@ from backend.db.database import get_db, engine
 from backend.user.auth import get_current_user
 from .models import Discussion, DiscussionParticipant, DiscussionMessage, UserChatRestriction
 from . import schemas
-from datetime import datetime
+from datetime import datetime, timedelta
 from backend.db.models import User
 import httpx
 import json
@@ -17,6 +17,40 @@ router = APIRouter(prefix="/api/discussions", tags=["discussions"])
 
 # WebSocket 연결을 저장할 딕셔너리
 connected_clients = {}
+
+# user_chat_restrictions 테이블 생성 함수
+def create_user_chat_restrictions_table():
+    """user_chat_restrictions 테이블을 생성합니다."""
+    with engine.connect() as conn:
+        # 테이블이 이미 존재하는지 확인
+        result = conn.execute(text("""
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='user_chat_restrictions'
+        """))
+        exists = result.scalar() is not None
+
+        if not exists:
+            conn.execute(text("""
+                CREATE TABLE user_chat_restrictions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER REFERENCES users(id),
+                    discussion_id INTEGER REFERENCES discussions(id),
+                    restricted_until TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+            conn.commit()
+            print("user_chat_restrictions 테이블 생성됨")
+        
+        # 만료된 제한 삭제
+        conn.execute(text("""
+            DELETE FROM user_chat_restrictions 
+            WHERE restricted_until < datetime('now')
+        """))
+        conn.commit()
+
+# 테이블 생성 실행
+create_user_chat_restrictions_table()
 
 async def get_bill_name(bill_id: str) -> str:
     """법안 API에서 법안 제목을 가져옵니다."""
@@ -31,16 +65,18 @@ async def get_bill_name(bill_id: str) -> str:
         print(f"법안 정보 조회 실패: {e}")
         return "알 수 없는 법안"
 
-async def get_user_from_token(token: str, db: Session) -> User:
+async def get_user_from_token(token: str, db: Session):
+    """토큰에서 사용자 정보를 가져옵니다."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
+        email: str = payload.get("sub")
         if email is None:
             return None
+        
         user = db.query(User).filter(User.email == email).first()
         return user
     except Exception as e:
-        print(f"토큰 검증 실패: {e}")
+        print(f"Token decode error: {e}")
         return None
 
 @router.post("/{bill_id}/join", response_model=schemas.Discussion)
@@ -114,6 +150,30 @@ async def leave_discussion(
     
     return {"message": "토론방에서 나갔습니다"}
 
+@router.get("/", response_model=List[schemas.DiscussionListItem])
+async def get_discussions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    discussions = db.query(Discussion).order_by(desc(Discussion.created_at)).all()
+    
+    result = []
+    for discussion in discussions:
+        bill_name = await get_bill_name(discussion.bill_id)
+        result.append({
+            "id": discussion.id,
+            "bill_id": discussion.bill_id,
+            "bill_name": bill_name,
+            "participant_count": db.query(DiscussionParticipant).filter(
+                DiscussionParticipant.discussion_id == discussion.id
+            ).count(),
+            "is_participating": db.query(DiscussionParticipant).filter(
+                DiscussionParticipant.discussion_id == discussion.id,
+                DiscussionParticipant.user_id == current_user.id
+            ).first() is not None
+        })
+    return result
+
 @router.get("/my", response_model=List[schemas.MyDiscussion])
 async def get_my_discussions(
     db: Session = Depends(get_db),
@@ -174,6 +234,16 @@ async def get_messages(
         "discussion_id": msg.discussion_id
     } for msg in messages]
 
+def is_user_restricted(db: Session, user_id: int, discussion_id: int) -> bool:
+    """사용자가 현재 채팅 제한 상태인지 확인합니다."""
+    with engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT * FROM user_chat_restrictions 
+            WHERE user_id = :user_id AND discussion_id = :discussion_id 
+            AND restricted_until > datetime('now')
+        """), {"user_id": user_id, "discussion_id": discussion_id})
+        return result.fetchone() is not None
+
 @router.post("/{discussion_id}/messages", response_model=schemas.Message)
 async def create_message(
     discussion_id: int,
@@ -191,7 +261,7 @@ async def create_message(
         raise HTTPException(status_code=403, detail="참여하지 않은 토론방입니다")
     
     # 채팅 제한 상태 확인
-    if UserChatRestriction.is_restricted(db, current_user.id, discussion_id):
+    if is_user_restricted(db, current_user.id, discussion_id):
         raise HTTPException(
             status_code=403,
             detail="신고로 인해 24시간 동안 채팅이 제한되었습니다"
@@ -241,11 +311,6 @@ async def websocket_endpoint(
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
         
-        # 채팅 제한 상태 확인
-        if UserChatRestriction.is_restricted(db, current_user.id, discussion_id):
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-            return
-        
         # 연결 저장
         if discussion_id not in connected_clients:
             connected_clients[discussion_id] = []
@@ -256,9 +321,9 @@ async def websocket_endpoint(
                 data = await websocket.receive_text()
                 
                 # 채팅 제한 상태 재확인
-                if UserChatRestriction.is_restricted(db, current_user.id, discussion_id):
-                    await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-                    return
+                if is_user_restricted(db, current_user.id, discussion_id):
+                    await websocket.send_json({"error": "채팅이 제한되었습니다."})
+                    continue
                 
                 # 메시지 저장
                 message = DiscussionMessage(
@@ -327,50 +392,78 @@ async def report_user(
 
     # 4. 이미 신고했는지 확인
     table_name = f"discussion_{discussion_id}_reports"
-    check_query = text(f"""
-        SELECT id FROM {table_name}
-        WHERE reporter_id = :reporter_id AND reported_user_id = :reported_user_id
-    """)
-    
-    result = db.execute(
-        check_query,
-        {
-            "reporter_id": current_user.id,
-            "reported_user_id": report.reported_user_id
-        }
-    ).first()
+    with engine.connect() as conn:
+        check_query = text(f"""
+            SELECT id FROM {table_name}
+            WHERE reporter_id = :reporter_id AND reported_user_id = :reported_user_id
+        """)
+        
+        result = conn.execute(
+            check_query,
+            {
+                "reporter_id": current_user.id,
+                "reported_user_id": report.reported_user_id
+            }
+        ).first()
 
-    if result:
-        raise HTTPException(status_code=400, detail="이미 신고한 사용자입니다")
+        if result:
+            raise HTTPException(status_code=400, detail="이미 신고한 사용자입니다")
 
-    # 5. 신고 정보 저장
-    insert_query = text(f"""
-        INSERT INTO {table_name} (reporter_id, reported_user_id, message_id, created_at)
-        VALUES (:reporter_id, :reported_user_id, :message_id, :created_at)
-        RETURNING id, reporter_id, reported_user_id, message_id, created_at
-    """)
+        # 5. 신고 정보 저장
+        insert_query = text(f"""
+            INSERT INTO {table_name} (reporter_id, reported_user_id, message_id, created_at)
+            VALUES (:reporter_id, :reported_user_id, :message_id, :created_at)
+        """)
 
-    result = db.execute(
-        insert_query,
-        {
-            "reporter_id": current_user.id,
-            "reported_user_id": report.reported_user_id,
-            "message_id": report.message_id,
-            "created_at": datetime.now()
-        }
-    ).first()
+        conn.execute(
+            insert_query,
+            {
+                "reporter_id": current_user.id,
+                "reported_user_id": report.reported_user_id,
+                "message_id": report.message_id,
+                "created_at": datetime.now()
+            }
+        )
+        conn.commit()
 
-    db.commit()
+        # 6. 신고 횟수 확인
+        count_query = text(f"""
+            SELECT COUNT(*) as report_count 
+            FROM {table_name} 
+            WHERE reported_user_id = :user_id
+        """)
+        count_result = conn.execute(count_query, {"user_id": report.reported_user_id})
+        report_count = count_result.scalar()
 
-    # 6. 신고 횟수 확인 및 채팅 제한 적용
-    discussion.check_and_restrict_user(db, report.reported_user_id)
+        # 7. 3번 이상 신고당했으면 24시간 제한
+        if report_count >= 3:
+            # 이미 제한이 있는지 확인
+            restriction_check = conn.execute(text("""
+                SELECT * FROM user_chat_restrictions 
+                WHERE user_id = :user_id AND discussion_id = :discussion_id 
+                AND restricted_until > datetime('now')
+            """), {"user_id": report.reported_user_id, "discussion_id": discussion_id})
+            
+            if not restriction_check.fetchone():
+                # 24시간 제한 적용
+                restriction_end = datetime.now() + timedelta(hours=24)
+                conn.execute(text("""
+                    INSERT INTO user_chat_restrictions (user_id, discussion_id, restricted_until)
+                    VALUES (:user_id, :discussion_id, :restricted_until)
+                """), {
+                    "user_id": report.reported_user_id,
+                    "discussion_id": discussion_id,
+                    "restricted_until": restriction_end
+                })
+                conn.commit()
+                print(f"사용자 {report.reported_user_id}가 토론방 {discussion_id}에서 24시간 제한됨")
 
     return {
-        "id": result.id,
-        "reporter_id": result.reporter_id,
-        "reported_user_id": result.reported_user_id,
-        "message_id": result.message_id,
-        "created_at": result.created_at
+        "id": 1,  # 임시 ID
+        "reporter_id": current_user.id,
+        "reported_user_id": report.reported_user_id,
+        "message_id": report.message_id,
+        "created_at": datetime.now()
     }
 
 @router.get("/users/{user_id}/report-status/{discussion_id}")
@@ -381,19 +474,22 @@ async def get_user_report_status(
     current_user: User = Depends(get_current_user)
 ):
     # 채팅 제한 상태 확인
-    restriction = db.query(UserChatRestriction).filter(
-        UserChatRestriction.user_id == user_id,
-        UserChatRestriction.discussion_id == discussion_id,
-        UserChatRestriction.restricted_until > datetime.now()
-    ).first()
-
-    if restriction:
+    with engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT restricted_until FROM user_chat_restrictions 
+            WHERE user_id = :user_id AND discussion_id = :discussion_id 
+            AND restricted_until > datetime('now')
+        """), {"user_id": user_id, "discussion_id": discussion_id})
+        
+        restriction = result.fetchone()
+        
+        if restriction:
+            return {
+                "is_restricted": True,
+                "restriction_end": restriction[0]
+            }
+        
         return {
-            "is_restricted": True,
-            "restriction_end": restriction.restricted_until
-        }
-    
-    return {
-        "is_restricted": False,
-        "restriction_end": None
-    } 
+            "is_restricted": False,
+            "restriction_end": None
+        } 

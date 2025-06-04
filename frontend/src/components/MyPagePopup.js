@@ -29,6 +29,10 @@ function MyPagePopup({ onClose }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (selectedDiscussion) {
+        return;
+      }
+      
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         onClose();
       }
@@ -38,7 +42,7 @@ function MyPagePopup({ onClose }) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [onClose]);
+  }, [onClose, selectedDiscussion]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('token');

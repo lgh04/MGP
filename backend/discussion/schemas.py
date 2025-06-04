@@ -33,6 +33,16 @@ class Discussion(DiscussionBase):
     class Config:
         from_attributes = True
 
+class DiscussionListItem(BaseModel):
+    id: int
+    bill_id: str
+    bill_name: str
+    participant_count: int
+    is_participating: bool
+
+    class Config:
+        from_attributes = True
+
 class DiscussionDetail(Discussion):
     messages: List[Message]
 
