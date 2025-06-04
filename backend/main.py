@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import re
 
 # ✅ DB 설정
 from backend.db.database import Base, engine, create_tables
@@ -21,10 +22,10 @@ from backend.lawdetail.crud import fetch_law_detail
 # ✅ 앱 생성
 app = FastAPI()
 
-# ✅ CORS 설정
+# ✅ CORS 설정 - 3.107.27.34의 모든 포트 허용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|3\.107\.27\.34)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*", "Authorization", "Content-Type"],
