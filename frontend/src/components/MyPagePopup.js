@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './MyPagePopup.css';
 import DiscussionPopup from './DiscussionPopup';
 
@@ -7,6 +7,7 @@ function MyPagePopup({ onClose }) {
   const [discussions, setDiscussions] = useState([]);
   const [selectedDiscussion, setSelectedDiscussion] = useState(null);
   const nickname = sessionStorage.getItem('nickname');
+  const popupRef = useRef(null);
 
   useEffect(() => {
     const fetchDiscussions = async () => {
@@ -25,6 +26,19 @@ function MyPagePopup({ onClose }) {
 
     fetchDiscussions();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('token');
@@ -54,7 +68,7 @@ function MyPagePopup({ onClose }) {
 
   return (
     <>
-      <div className="mypage-popup">
+      <div className="mypage-popup" ref={popupRef} onClick={(e) => e.stopPropagation()}>
         <div className="mypage-header">
           <h2>마이페이지</h2>
           <button className="close-button" onClick={onClose}>×</button>

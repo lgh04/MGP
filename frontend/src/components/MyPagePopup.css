@@ -1,8 +1,7 @@
 .mypage-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: absolute;
+  top: 60px;  /* 헤더 높이 + 약간의 여백 */
+  right: 40px;  /* 오른쪽 여백 */
   width: 400px;
   height: 600px;
   background-color: white;
