@@ -89,73 +89,77 @@ function Home() {
         </div>
       </header>
 
-      <main className="home-center">
-        <img src="/main-logo.png" alt="ACT:ON 중앙 로고" className="home-logo-center" />
+      <div className="home-content">
+        <div className="search-section">
+          <img src="/main-logo.png" alt="ACT:ON 중앙 로고" className="home-logo-center" />
 
-        <div className="search-bar">
-          <select
-            value={searchMode}
-            onChange={(e) => setSearchMode(e.target.value)}
-          >
-            <option value="발의">발의</option>
-            <option value="공포">공포</option>
-          </select>
+          <div className="search-bar">
+            <select
+              value={searchMode}
+              onChange={(e) => setSearchMode(e.target.value)}
+            >
+              <option value="발의">발의</option>
+              <option value="공포">공포</option>
+            </select>
 
-          <input
-            type="text"
-            placeholder="발의된 또는 공포된 법안을 검색해 주세요"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+            <input
+              type="text"
+              placeholder="발의된 또는 공포된 법안을 검색해 주세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
 
-          <button onClick={handleSearch}>
-            <span role="img" aria-label="search">🔍</span>
-          </button>
+            <button onClick={handleSearch}>
+              <span role="img" aria-label="search">🔍</span>
+            </button>
+          </div>
         </div>
 
-        <img src="/banner.png" alt="배너 이미지" className="banner-image" />
-      </main>
+        <div className="banner-section">
+          <img src="/home-design.png" alt="배너 이미지" className="banner-image" />
+        </div>
 
-      <section className="law-section">
-        <h2>법안 목록</h2>
-        <p>공포된 법안과 발의된 법안을 구분해서 확인해요</p>
+        <section className="law-section">
+          <h2>법안 목록</h2>
+          <p>공포된 법안과 발의된 법안을 구분해서 확인해요</p>
 
-        {isLoading ? (
-          <div className="loading">데이터를 불러오는 중...</div>
-        ) : isError ? (
-          <div className="error">
-            {error || "법안 데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요."}
-          </div>
-        ) : (
-          <div className="law-boxes">
-            {["공포", "발의"].map((mode) => (
-              <div className="law-box" key={mode}>
-                <div className="law-box-header">
-                  <h3>{mode}된 법안</h3>
-                </div>
+          {isLoading ? (
+            <div className="loading">데이터를 불러오는 중...</div>
+          ) : isError ? (
+            <div className="error">
+              {error || "법안 데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요."}
+            </div>
+          ) : (
+            <div className="law-boxes">
+              {["공포", "발의"].map((mode) => (
+                <div className="law-box" key={mode}>
+                  <div className="law-box-header">
+                    <h3>{mode}된 법안</h3>
+                  </div>
 
-                <div className="law-scroll-box">
-                  {laws[mode].slice(0, 8).map((law, idx) => (
-                    <div key={idx} className="law-item">
-                      <div 
-                        onClick={() => navigate(`/detail/${law.bill_id}`)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {law.title}
+                  <div className="law-scroll-box">
+                    {laws[mode].slice(0, 8).map((law, idx) => (
+                      <div key={idx} className="law-item">
+                        <div 
+                          onClick={() => navigate(`/detail/${law.bill_id}`)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {law.title}
+                        </div>
+                        <div className="law-date">{law.date}</div>
                       </div>
-                      <div className="law-date">{law.date}</div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <div className="law-more-button">
-                  <button onClick={() => navigate(`/list?query=&mode=${mode}&sort=latest&page=1`)}>＋</button>
+                  <div className="law-more-button">
+                    <button onClick={() => navigate(`/list?query=&mode=${mode}&sort=latest&page=1`)}>＋</button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
 
       {showPopup && <MyPagePopup onClose={() => setShowPopup(false)} />}
     </div>

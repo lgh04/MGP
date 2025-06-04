@@ -60,12 +60,21 @@
   color: #1963ac;
 }
 
-.home-center {
+.home-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  min-width: 900px;
+}
+
+.search-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
   padding-top: 100px;
-  padding-bottom: 160px;
+  min-width: 900px;
 }
 
 .home-logo-center {
@@ -81,25 +90,26 @@
   overflow: hidden;
   background: white;
   padding: 4px 12px;
-  width: 600px;
-  max-width: 90%;
+  width: 900px;
+  max-width: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 200px;
 }
 
-.search-bar select,
+.search-bar select {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  padding: 8px;
+  background: transparent;
+  width: 80px;
+  cursor: pointer;
+}
+
 .search-bar input {
   border: none;
   outline: none;
   font-size: 16px;
   padding: 8px;
-}
-
-.search-bar select {
-  background: none;
-}
-
-.search-bar input {
   flex: 1;
 }
 
@@ -110,10 +120,36 @@
   cursor: pointer;
 }
 
+@media screen and (max-width: 1000px) {
+  .home-content,
+  .search-section,
+  .search-bar {
+    min-width: 90%;
+    width: 90%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .search-bar {
+    width: 90%;
+    min-width: 280px;
+  }
+  
+  .search-bar select {
+    width: 70px;
+  }
+}
+
+.banner-section {
+  width: 100%;
+  margin-top: 200px;  /* 검색창과 배너 사이의 간격을 200px로 수정 */
+  margin-bottom: 100px;
+}
+
 .banner-image {
   width: 100%;
   max-width: 1430px;
-  margin: 0 auto 100px auto;
+  margin: 0 auto;
   display: block;
 }
 
