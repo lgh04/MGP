@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@tanstack/react-query": "^5.80.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30"
   }
 }

@@ -3,6 +3,16 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
 
+declare global {
+  interface Window {
+    env: {
+      REACT_APP_API_URL: string;
+    }
+  }
+}
+
+const REACT_APP_API_URL = window.env?.REACT_APP_API_URL || process.env.REACT_APP_API_URL;
+
 const DiscussionContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -158,7 +168,7 @@ const Discussion = () => {
       if (isConnecting) return;
       setIsConnecting(true);
 
-      const wsUrl = `ws://${window.location.host}/api/discussions/${id}/ws?token=${token}`;
+      const wsUrl = `${REACT_APP_API_URL.replace('http', 'ws')}/api/discussions/${id}/ws?token=${token}`;
       const socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {

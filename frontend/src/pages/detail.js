@@ -126,7 +126,7 @@ function DetailPage() {
       if (!nickname) return;
 
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/discussions/${billId}/join`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/discussions/${billId}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`

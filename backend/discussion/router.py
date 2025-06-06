@@ -12,6 +12,7 @@ import httpx
 import json
 from jose import jwt
 from backend.user.auth import SECRET_KEY, ALGORITHM
+from backend.lawdetail.crud import fetch_law_detail
 
 router = APIRouter(prefix="/api/discussions", tags=["discussions"])
 
@@ -52,15 +53,16 @@ def create_user_chat_restrictions_table():
 # 테이블 생성 실행
 create_user_chat_restrictions_table()
 
-async def get_bill_name(bill_id: str) -> str:
+def get_bill_name(bill_id: str) -> str:
     """법안 API에서 법안 제목을 가져옵니다."""
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(f"${process.env.NEXT_PUBLIC_API_URL}/api/law/{bill_id}")
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("BILL_NAME", "알 수 없는 법안")
-            return "알 수 없는 법안"
+        result = fetch_law_detail(bill_id)
+        if isinstance(result, dict):
+            if "error" in result:
+                print(f"법안 정보 조회 실패: {result['error']}")
+                return "알 수 없는 법안"
+            return result.get("BILL_NAME", "알 수 없는 법안")
+        return "알 수 없는 법안"
     except Exception as e:
         print(f"법안 정보 조회 실패: {e}")
         return "알 수 없는 법안"
@@ -159,7 +161,7 @@ async def get_discussions(
     
     result = []
     for discussion in discussions:
-        bill_name = await get_bill_name(discussion.bill_id)
+        bill_name = get_bill_name(discussion.bill_id)
         result.append({
             "id": discussion.id,
             "bill_id": discussion.bill_id,
@@ -190,8 +192,13 @@ async def get_my_discussions(
             DiscussionMessage.discussion_id == discussion.id
         ).order_by(desc(DiscussionMessage.created_at)).first()
         
-        # 법안 제목 가져오기
-        bill_name = await get_bill_name(discussion.bill_id)
+        # 법안 정보 가져오기
+        try:
+            law_info = await fetch_law_detail(discussion.bill_id)
+            bill_name = law_info.get('BILL_NAME', '알 수 없는 법안')
+        except Exception as e:
+            print(f"법안 정보 조회 실패 (ID: {discussion.bill_id}): {e}")
+            bill_name = '알 수 없는 법안'
         
         discussions.append({
             "id": discussion.id,
@@ -492,4 +499,41 @@ async def get_user_report_status(
         return {
             "is_restricted": False,
             "restriction_end": None
-        } 
+        }
+
+@router.get("/{discussion_id}", response_model=schemas.Discussion)
+async def get_discussion(
+    discussion_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # bill_id로 토론방을 찾는 경우
+    if discussion_id.startswith('PRC_'):
+        discussion = db.query(Discussion).filter(Discussion.bill_id == discussion_id).first()
+    else:
+        # discussion_id로 토론방을 찾는 경우
+        try:
+            discussion_id_int = int(discussion_id)
+            discussion = db.query(Discussion).filter(Discussion.id == discussion_id_int).first()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="잘못된 토론방 ID 형식입니다")
+
+    if not discussion:
+        raise HTTPException(status_code=404, detail="토론방을 찾을 수 없습니다")
+    
+    participant_count = db.query(DiscussionParticipant).filter(
+        DiscussionParticipant.discussion_id == discussion.id
+    ).count()
+    
+    is_participating = db.query(DiscussionParticipant).filter(
+        DiscussionParticipant.discussion_id == discussion.id,
+        DiscussionParticipant.user_id == current_user.id
+    ).first() is not None
+    
+    return {
+        "id": discussion.id,
+        "bill_id": discussion.bill_id,
+        "created_at": discussion.created_at,
+        "participant_count": participant_count,
+        "is_participating": is_participating
+    } 

@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './DiscussionPopup.css';
 
-function DiscussionPopup({ discussionId, billName, onClose }) {
+const DiscussionPopup = ({ discussionId, billId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, messageId: null });
   const messagesEndRef = useRef(null);
   const nickname = sessionStorage.getItem('nickname');
-  const [ws, setWs] = useState(null);
+  const [socket, setSocket] = useState(null);
   const [userRestrictions, setUserRestrictions] = useState({});
+  const [billName, setBillName] = useState("법안명 로딩중...");
 
   const formatTime = (timeString) => {
     const date = new Date(timeString);
@@ -24,6 +25,30 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
   }, [messages]);
 
   useEffect(() => {
+    const loadBillInfo = async () => {
+      if (billId) {
+        try {
+          const token = sessionStorage.getItem('token');
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/law/${billId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await response.json();
+          setBillName(data.BILL_NAME || "알 수 없는 법안");
+        } catch (error) {
+          console.error("법안 정보 로드 실패:", error);
+          setBillName("알 수 없는 법안");
+        }
+      }
+    };
+
+    loadBillInfo();
+  }, [billId]);
+
+  useEffect(() => {
+    if (!discussionId) return;
+
     // 기존 메시지 로드
     const fetchMessages = async () => {
       try {
@@ -43,7 +68,8 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
 
     // WebSocket 연결
     const token = sessionStorage.getItem('token');
-    const wsConnection = new WebSocket(`ws://localhost:8000/api/discussions/${discussionId}/ws?token=${token}`);
+    const wsUrl = process.env.REACT_APP_API_URL.replace('http', 'ws');
+    const wsConnection = new WebSocket(`${wsUrl}/api/discussions/${discussionId}/ws?token=${token}`);
 
     wsConnection.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -54,7 +80,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
       console.error('WebSocket 에러:', error);
     };
 
-    setWs(wsConnection);
+    setSocket(wsConnection);
 
     return () => {
       if (wsConnection) {
@@ -94,7 +120,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
   };
 
   const handleSendMessage = () => {
-    if (newMessage.trim() && ws) {
+    if (newMessage.trim() && socket) {
       const currentUserRestriction = userRestrictions[sessionStorage.getItem('user_id')];
       if (currentUserRestriction?.is_restricted) {
         const endTime = new Date(currentUserRestriction.restriction_end);
@@ -102,7 +128,7 @@ function DiscussionPopup({ discussionId, billName, onClose }) {
         alert(`채팅이 제한되었습니다. ${remainingTime}시간 후에 다시 시도해주세요.`);
         return;
       }
-      ws.send(newMessage);
+      socket.send(newMessage);
       setNewMessage('');
     }
   };

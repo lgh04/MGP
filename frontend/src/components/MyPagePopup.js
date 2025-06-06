@@ -12,13 +12,39 @@ function MyPagePopup({ onClose }) {
   useEffect(() => {
     const fetchDiscussions = async () => {
       try {
+        const token = sessionStorage.getItem('token');
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/discussions/my`, {
           headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
-        setDiscussions(data);
+
+        // 각 토론방의 법안 정보를 가져옵니다
+        const discussionsWithBillNames = await Promise.all(
+          data.map(async (discussion) => {
+            try {
+              const lawResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/law/${discussion.bill_id}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              const lawData = await lawResponse.json();
+              return {
+                ...discussion,
+                billName: lawData.BILL_NAME || "알 수 없는 법안"
+              };
+            } catch (error) {
+              console.error(`법안 정보 로딩 실패 (ID: ${discussion.bill_id}):`, error);
+              return {
+                ...discussion,
+                billName: "알 수 없는 법안"
+              };
+            }
+          })
+        );
+        
+        setDiscussions(discussionsWithBillNames);
       } catch (error) {
         console.error('토론방 목록 로드 실패:', error);
       }
@@ -109,9 +135,9 @@ function MyPagePopup({ onClose }) {
                     onClick={() => setSelectedDiscussion(discussion)}
                   >
                     <div className="discussion-info">
-                      <h3>{discussion.bill_name}</h3>
+                      <h3>{discussion.billName}</h3>
                       <p className="last-message">
-                        {discussion.last_message}
+                        {discussion.last_message || "새로운 토론방입니다"}
                       </p>
                     </div>
                     {discussion.last_message_time && (
@@ -139,7 +165,7 @@ function MyPagePopup({ onClose }) {
       {selectedDiscussion && (
         <DiscussionPopup
           discussionId={selectedDiscussion.id}
-          billName={selectedDiscussion.bill_name}
+          billId={selectedDiscussion.bill_id}
           onClose={() => setSelectedDiscussion(null)}
         />
       )}
